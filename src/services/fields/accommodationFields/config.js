@@ -1,0 +1,18 @@
+export const ACCOMMODATION_FIELDS = [
+    { key: 'Hall', source: 'valueCols', outputKey: 'hall', targetLeft: 59.99 },
+	{ key: 'Living Rooms', source: 'valueCols', outputKey: 'livingRooms', targetLeft: 71.4 },
+    { key: 'Kitchen', source: 'valueCols', outputKey: 'kitchens', targetLeft: 82.36 },
+    { key: 'Lift', source: 'checkbox', outputKey: 'hasLift', left: 91.92 },
+    { key: 'Utility', source: 'valueCols', outputKey: 'utilityRoom', targetLeft: 59.99 },
+	{ key: 'Bedrooms', source: 'valueCols', outputKey: 'bedrooms', targetLeft: 71.4 },
+	{ key: 'Bathrooms', source: 'valueCols', outputKey: 'bathrooms', targetLeft: 82.36 },
+	{ key: 'Separate WC', source: 'valueCols', outputKey: 'separateWc', targetLeft: 91.92 },
+    { key: 'Basement', source: 'valueCols', outputKey: 'basement', targetLeft: 59.99 },
+    { key: 'Garage', source: 'valueCols', outputKey: 'garage', targetLeft:  71.4},
+    { key: 'Parking', source: 'valueCols', outputKey: 'parking', targetLeft: 82.36 },
+    { key: 'Gardens', source: 'checkbox', outputKey: 'garden', left: 59.99 },
+    { key: 'If Yes Private', source: 'checkbox', outputKey: 'privateGarden', left: 82.36 },
+    { key: 'Communal', source: 'checkbox', outputKey: 'sharedGarden', left: 91.92 },
+    { key: 'Number of outbuildings', source: 'valueCols', outputKey: 'numberOfOutbuildings', targetLeft: 71.4 },
+    { key: 'Gross floor area of dwelling', source: 'valueCols', outputKey: 'grossFloorAreaOfDwelling', targetLeft: 78.29 },
+];

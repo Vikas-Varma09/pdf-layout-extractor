@@ -1,0 +1,29 @@
+{
+  "name": "pdf-word-extract",
+  "version": "1.0.0",
+  "description": "Node.js PDF field extractor using pdfjs-dist with spatial mapping",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "type": "module",
+  "keywords": [
+    "pdf",
+    "pdfjs-dist",
+    "extract",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "pdfjs-dist": "^4.7.76"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
+
+

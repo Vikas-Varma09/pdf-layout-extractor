@@ -1,0 +1,22 @@
+import { extractValueAtLeft } from './valueAtLeftExtractor.js';
+import { PROPERTY_TYPE_FIELDS } from '../fields/propertyTypeFields/config.js';
+import { ACCOMMODATION_FIELDS } from '../fields/accommodationFields/config.js';
+
+export function extractValueColumns(spans) {
+	const out = {};
+	// Build configs from central PROPERTY_TYPE_FIELDS with targetLeft defined
+	for (const f of PROPERTY_TYPE_FIELDS) {
+		if (f.source === 'valueCols' && typeof f.targetLeft === 'number') {
+			out[f.key] = extractValueAtLeft(spans, { label: f.key, targetLeft: f.targetLeft });
+		}
+	}
+	// Also include ACCOMMODATION value columns
+	for (const f of ACCOMMODATION_FIELDS) {
+		if (f.source === 'valueCols' && typeof f.targetLeft === 'number') {
+			out[f.key] = extractValueAtLeft(spans, { label: f.key, targetLeft: f.targetLeft });
+		}
+	}
+	return out;
+}
+
+

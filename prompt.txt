@@ -1,0 +1,23 @@
+TEXT-AREA ANSWER EXTRACTION (UPDATED)
+
+For text-area fields:
+- Do NOT restrict answer spans by left alignment
+- The answer is ALL text spans between:
+    - labelA.topEnd
+    - labelB.topStart
+
+Extraction rule:
+span.page === labelA.page
+AND span.top > labelA.topEnd
+AND span.top < labelB.topStart
+
+Sort spans by:
+- top ascending
+- left ascending
+
+Concatenate span.text with spaces to form the final answer.
+
+This must support:
+- multi-line answers
+- wrapped text
+- varying left indentation
