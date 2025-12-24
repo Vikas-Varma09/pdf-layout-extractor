@@ -11,6 +11,12 @@ const TEXTAREA_FIELDS = [
 		// Allow including slightly more right-indented lines from the same column
 		expandRightWithin: 20.0,
 	},
+	{
+		label: '(please provide details)',
+		nextLabel: 'Converted',
+		clusterThreshold: 6.0,
+		expandRightWithin: 20.0,
+	},
 ];
 
 /**

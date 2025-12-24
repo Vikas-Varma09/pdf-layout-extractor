@@ -22,6 +22,9 @@ export const PROPERTY_TYPE_FIELDS = [
 	{ key: 'Purpose Built', source: 'checkbox', outputKey: 'isPurposeBuilt', left: 16.4 },
 	{ key: 'No of units in block', source: 'valueCols', outputKey: 'numberOfUnitsInBlock', targetLeft: 32.09 },
 	{ key: 'Above commercial', source: 'checkbox', outputKey: 'isAboveCommercial' },
+	// Textarea fields (bounded between labels)
+	{ key: 'If Yes, please state if this would affect the residential nature of the property e.g. Noise, Odour', source: 'textarea', outputKey: 'residentialNatureImpact', nextLabel: 'Tenure:' },
+	
 	{ key: 'Freehold', source: 'checkbox', outputKey: 'isFreehold', left: 46.36 },
 	{ key: 'Leasehold', source: 'checkbox', outputKey: 'isLeasehold', left: 32.42 },
 	{ key: 'Flying freehold', source: 'checkbox', outputKey: 'isFlyingFreehold' },
@@ -35,8 +38,7 @@ export const PROPERTY_TYPE_FIELDS = [
 	{ key: 'If Yes please state % in commercial use', source: 'valueCols', outputKey: 'commercialUsePercentage', targetLeft: 39.65 },
 	{ key: 'under a shared ownership scheme?', source: 'checkbox', outputKey: 'isPurchasedUnderSharedOwnership' },
 	{ key: 'Year property built', source: 'valueCols', outputKey: 'yearPropertyBuilt', targetLeft: 19.65 },
-	// Textarea fields (bounded between labels)
-	{ key: 'If Yes, please state if this would affect the residential nature of the property e.g. Noise, Odour', source: 'textarea', outputKey: 'residentialNatureImpact', nextLabel: 'Tenure:' },
+
 ];
 
 

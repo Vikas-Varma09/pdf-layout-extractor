@@ -11,8 +11,10 @@ export const ACCOMMODATION_FIELDS = [
     { key: 'Garage', source: 'valueCols', outputKey: 'garage', targetLeft:  71.4},
     { key: 'Parking', source: 'valueCols', outputKey: 'parking', targetLeft: 82.36 },
     { key: 'Gardens', source: 'checkbox', outputKey: 'garden', left: 59.99 },
-    { key: 'If Yes Private', source: 'checkbox', outputKey: 'privateGarden', left: 82.36 },
+    { key: 'Private', source: 'checkbox', outputKey: 'privateGarden', left: 82.36 },
     { key: 'Communal', source: 'checkbox', outputKey: 'sharedGarden', left: 91.92 },
     { key: 'Number of outbuildings', source: 'valueCols', outputKey: 'numberOfOutbuildings', targetLeft: 71.4 },
+	{ key: '(please provide details)', source: 'textarea', outputKey: 'outbuildingDetails', nextLabel: 'Gross floor area of dwelling' },
     { key: 'Gross floor area of dwelling', source: 'valueCols', outputKey: 'grossFloorAreaOfDwelling', targetLeft: 78.29 },
+    
 ];

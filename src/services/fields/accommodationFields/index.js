@@ -1,4 +1,5 @@
 import { ACCOMMODATION_FIELDS } from './config.js';
+import { extractTextareaFields } from '../../textareaFields/index.js';
 
 // Compute single-choice value from spans at a given left on the same row.
 // Returns 'X' when an X-like marker is present; otherwise returns the nearest text.
@@ -29,6 +30,8 @@ function computeSingleChoiceFromSpans(spans, label, left, topThreshold = 0.6, le
 
 export function buildAccommodationGroup({ spans, checkbox, valueCols }) {
 	const out = {};
+	// Precompute textarea values once
+	let textareaMap = null;
 	for (const item of ACCOMMODATION_FIELDS) {
 		const outputKey = item.outputKey || item.key;
 		const sourceKey = item.key;
@@ -40,6 +43,9 @@ export function buildAccommodationGroup({ spans, checkbox, valueCols }) {
 				: computeSingleChoiceFromSpans(spans, sourceKey, item.left);
 		} else if (item.source === 'valueCols') {
 			value = valueCols?.[sourceKey] ?? null;
+		} else if (item.source === 'textarea') {
+			if (!textareaMap) textareaMap = extractTextareaFields(spans);
+			value = textareaMap?.[sourceKey] ?? null;
 		}
 		out[outputKey] = value ?? null;
 	}
