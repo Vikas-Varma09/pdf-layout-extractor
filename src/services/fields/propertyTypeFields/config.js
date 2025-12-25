@@ -25,7 +25,7 @@ export const PROPERTY_TYPE_FIELDS = [
 	// Textarea fields (bounded between labels)
 	{ key: 'If Yes, please state if this would affect the residential nature of the property e.g. Noise, Odour', source: 'textarea', outputKey: 'residentialNatureImpact', nextLabel: 'Tenure:' },
 	
-	{ key: 'Freehold', source: 'checkbox', outputKey: 'isFreehold', left: 46.36 },
+	{ key: 'Freehold', source: 'checkbox', outputKey: 'isFreehold', left: 19.75 },
 	{ key: 'Leasehold', source: 'checkbox', outputKey: 'isLeasehold', left: 32.42 },
 	{ key: 'Flying freehold', source: 'checkbox', outputKey: 'isFlyingFreehold' },
 	{ key: 'If Yes, what %', source: 'valueCols', outputKey: 'flyingFreeholdPercentage', targetLeft: 43.51 },
