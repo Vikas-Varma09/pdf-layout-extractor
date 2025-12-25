@@ -23,6 +23,10 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 				Math.abs(s.top - labelA.topStart) < rowEps &&
 				s.left > labelA.left;
 			if (!(betweenRows || sameRowRight)) return false;
+			// Optional short window below A to avoid capturing far-off labels
+			if (betweenRows && typeof options.maxBelowA === 'number') {
+				if ((s.top - labelA.topEnd) > options.maxBelowA) return false;
+			}
 			if (typeof s.text !== 'string' || s.text.trim().length === 0) return false;
 			// Optionally require tokens to be on or to the right of label A
 			if (options.onlyRightOfA === true) {
@@ -94,7 +98,46 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 
 	if (filtered.length === 0) return null;
 
-	const joined = filtered.map(s => s.text.trim()).join(' ').replace(/\s+/g, ' ').trim();
+	let joined = filtered.map(s => s.text.trim()).join(' ').replace(/\s+/g, ' ').trim();
+
+	// Optionally strip label prefixes if they leak into the capture
+	if (options.stripLabelPrefixes) {
+		const stripOne = (text, prefix) => {
+			if (!prefix || typeof prefix !== 'string') return text;
+			const re = new RegExp('^' + escapeRegex(prefix.trim()) + '\\s*', 'i');
+			return text.replace(re, '').trim();
+		};
+		const tokens = [];
+		if (typeof options.labelAText === 'string' && options.labelAText.trim().length > 0) {
+			tokens.push(options.labelAText);
+		}
+		if (Array.isArray(options.stripTokens)) {
+			for (const tk of options.stripTokens) {
+				if (typeof tk === 'string' && tk.trim().length > 0) tokens.push(tk);
+			}
+		}
+		// Repeatedly strip any leading token until no change
+		let changed = true;
+		while (changed && joined.length > 0) {
+			const before = joined;
+			for (const tk of tokens) {
+				joined = stripOne(joined, tk);
+			}
+			changed = before !== joined;
+		}
+	}
+
+	// Optionally reject if the remaining text is just the label (or mostly the label)
+	if (options.rejectIfLabel && typeof options.labelAText === 'string') {
+		const lab = options.labelAText.trim().toLowerCase();
+		const txt = joined.trim().toLowerCase();
+		if (lab.length > 0) {
+			if (txt === lab || (txt.startsWith(lab) && txt.length - lab.length < 5)) {
+				joined = '';
+			}
+		}
+	}
+
 	if (options.debug) {
 		console.log('[textarea] joined:', joined);
 	}
@@ -106,5 +149,9 @@ function avgLeft(arr) {
 	let sum = 0;
 	for (const s of arr) sum += s.left;
 	return sum / arr.length;
+}
+
+function escapeRegex(str) {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 

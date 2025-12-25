@@ -8,7 +8,10 @@ export const NEW_BUILD_FIELDS = [
     { key: 'Premier', source: 'checkbox', outputKey: 'isPremier', left: 30.07 },
     { key: 'Professional Consultant', source: 'checkbox', outputKey: 'isProfessionalConsultant', left: 46.36 },
     { key: 'Other', source: 'checkbox', outputKey: 'isOtherCert', left: 12.94 },
+    { key: 'If Other, please provide details', source: 'textarea', outputKey: 'otherCertDetails', nextLabel: 'Is this a Self-build project?', textareaMapKey: 'newbuild_otherCertDetails' },
     { key: 'Is this a Self-build project?', source: 'checkbox', outputKey: 'isSelfBuildProject', yesLeft: 40.23, noLeft: 46.03  },
     { key: 'part exchange?', source: 'checkbox', outputKey: 'isInvolvesPartExchange', yesLeft: 40.23, noLeft: 46.03  },
-    { key: 'Has a Disclosure of Incentives form been seen?', source: 'checkbox', outputKey: 'isDisclosureOfIncentivesSeen', yesLeft: 40.23, noLeft: 46.03  }
+     { key: 'Has a Disclosure of Incentives form been seen?', source: 'checkbox', outputKey: 'isDisclosureOfIncentivesSeen', yesLeft: 40.23, noLeft: 46.03  },
+     { key: 'Including total value of incentives & if part exchange', source: 'textarea', outputKey: 'incentivesDetails', nextLabel: 'If property is New Build, please provide the name of Developer:', textareaMapKey: 'newbuild_incentivesDetails' },
+     { key: 'If property is New Build, please provide the name of Developer:', source: 'textarea', outputKey: 'newBuildDeveloperName', nextLabel: 'Gatehouse Bank plc is authorised', textareaMapKey: 'newbuild_developerName' },
 ];

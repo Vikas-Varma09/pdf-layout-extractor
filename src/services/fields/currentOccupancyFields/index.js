@@ -14,7 +14,8 @@ export function buildCurrentOccupancyGroup({ spans, checkbox, valueCols }) {
 			value = valueCols?.[sourceKey] ?? null;
 		} else if (item.source === 'textarea') {
 			if (!textareaMap) textareaMap = extractTextareaFields(spans);
-			value = textareaMap?.[sourceKey] ?? null;
+			const textareaKey = item.textareaMapKey || sourceKey;
+			value = textareaMap?.[textareaKey] ?? null;
 		}
 		out[outputKey] = value ?? null;
 	}
