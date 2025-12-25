@@ -1,5 +1,7 @@
 import { extractPropertyType, extractPropertyTypeStatuses } from './propertyTypeExtractor.js';
 import { extractYesNo } from './yesNoExtractor.js';
+import { PROPERTY_TYPE_FIELDS } from '../fields/propertyTypeFields/config.js';
+import { CURRENT_OCCUPANCY_FIELDS } from '../fields/currentOccupancyFields/config.js';
 
 /**
  * Extract checkbox-related fields from spans.
@@ -11,15 +13,13 @@ export function extractCheckboxFields(spans) {
 	const propertyType = extractPropertyType(spans);
 	const statuses = extractPropertyTypeStatuses(spans);
 
-	// Generic Yes/No questions configured by label and coordinates
-	const yesNoConfigs = [
-		{ label: 'Property built or owned by the Local Authority?', yesLeft: 40.33, noLeft: 46.36 },
-		{ label: 'Above commercial', yesLeft: 40.33, noLeft: 46.36 },
-		{ label: 'Flying freehold', yesLeft: 19.6, noLeft: 26.88 },
-		{ label: 'Is any part of the property in commercial use?', yesLeft: 40.15, noLeft: 46.36 },
-		{ label: 'under a shared ownership scheme?', yesLeft: 40.15, noLeft: 46.36 },
-	];
 	const yesNoResults = {};
+	const yesNoConfigs = [
+		...PROPERTY_TYPE_FIELDS,
+		...CURRENT_OCCUPANCY_FIELDS,
+	]
+		.filter(f => f.source === 'checkbox' && typeof f.yesLeft === 'number' && typeof f.noLeft === 'number')
+		.map(f => ({ label: f.key, yesLeft: f.yesLeft, noLeft: f.noLeft }));
 	for (const cfg of yesNoConfigs) {
 		yesNoResults[cfg.label] = extractYesNo(spans, cfg);
 	}

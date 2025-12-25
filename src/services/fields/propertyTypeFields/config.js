@@ -15,28 +15,28 @@ export const PROPERTY_TYPE_FIELDS = [
 
 	{ key: 'If flat / maisonette on what floor?', source: 'valueCols', outputKey: 'flatMaisonetteFloor', targetLeft: 26.37 },
 	{ key: 'No. of floors in block', source: 'valueCols', outputKey: 'numberOfFloorsInBlock', targetLeft: 45.02 },
-	{ key: 'Property built or owned by the Local Authority?', source: 'checkbox', outputKey: 'isBuiltOrOwnedByLocalAuthority' },
+	{ key: 'Property built or owned by the Local Authority?', source: 'checkbox', outputKey: 'isBuiltOrOwnedByLocalAuthority', yesLeft: 40.33, noLeft: 46.36 },
 	{ key: 'If Yes, what is the approximate % of owner occupation', source: 'valueCols', outputKey: 'ownerOccupationPercentage', targetLeft: 39.98 },
 	{ key: 'Converted', source: 'checkbox', outputKey: 'isFlatMaisonetteConverted', left: 16.29 },
 	{ key: 'please state year of conversion', source: 'valueCols', outputKey: 'conversionYear', targetLeft: 43.17 },
 	{ key: 'Purpose Built', source: 'checkbox', outputKey: 'isPurposeBuilt', left: 16.4 },
 	{ key: 'No of units in block', source: 'valueCols', outputKey: 'numberOfUnitsInBlock', targetLeft: 32.09 },
-	{ key: 'Above commercial', source: 'checkbox', outputKey: 'isAboveCommercial' },
+	{ key: 'Above commercial', source: 'checkbox', outputKey: 'isAboveCommercial', yesLeft: 40.33, noLeft: 46.36 },
 	// Textarea fields (bounded between labels)
 	{ key: 'If Yes, please state if this would affect the residential nature of the property e.g. Noise, Odour', source: 'textarea', outputKey: 'residentialNatureImpact', nextLabel: 'Tenure:' },
 	
 	{ key: 'Freehold', source: 'checkbox', outputKey: 'isFreehold', left: 19.75 },
 	{ key: 'Leasehold', source: 'checkbox', outputKey: 'isLeasehold', left: 32.42 },
-	{ key: 'Flying freehold', source: 'checkbox', outputKey: 'isFlyingFreehold' },
+	{ key: 'Flying freehold', source: 'checkbox', outputKey: 'isFlyingFreehold', yesLeft: 19.6, noLeft: 26.88 },
 	{ key: 'If Yes, what %', source: 'valueCols', outputKey: 'flyingFreeholdPercentage', targetLeft: 43.51 },
 	{ key: 'Maintenance Charge', source: 'valueCols', outputKey: 'maintenanceCharge', targetLeft: 12.17 },
 	{ key: 'Ground Rent', source: 'valueCols', outputKey: 'groundRent', targetLeft: 26.71 },
 	{ key: 'Road Charges', source: 'valueCols', outputKey: 'roadCharges', targetLeft: 40.32 },
 
 	{ key: 'Remaining term of Lease (if unknown as per RICS red book)', source: 'valueCols', outputKey: 'remainingLeaseTermYears', targetLeft: 39.71 },
-	{ key: 'Is any part of the property in commercial use?', source: 'checkbox', outputKey: 'isPartCommercialUse' },
+	{ key: 'Is any part of the property in commercial use?', source: 'checkbox', outputKey: 'isPartCommercialUse', yesLeft: 40.15, noLeft: 46.36 },
 	{ key: 'If Yes please state % in commercial use', source: 'valueCols', outputKey: 'commercialUsePercentage', targetLeft: 39.65 },
-	{ key: 'under a shared ownership scheme?', source: 'checkbox', outputKey: 'isPurchasedUnderSharedOwnership' },
+	{ key: 'under a shared ownership scheme?', source: 'checkbox', outputKey: 'isPurchasedUnderSharedOwnership', yesLeft: 40.15, noLeft: 46.36 },
 	{ key: 'Year property built', source: 'valueCols', outputKey: 'yearPropertyBuilt', targetLeft: 19.65 },
 
 ];

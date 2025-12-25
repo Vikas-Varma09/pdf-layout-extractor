@@ -21,6 +21,27 @@ const TEXTAREA_FIELDS = [
 		clusterThreshold: 6.0,
 		expandRightWithin: 20.0,
 	},
+	// Current Occupancy: details for HMO/MUFB question
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		// Use exact text to disambiguate from the HMO question above
+		nextLabel: 'Does the property appear to be tenanted at present?',
+		nextLabelIncludes: 'Does the property appear to',
+		// Keep to the right column where CURRENT OCCUPANCY sits
+		leftBand: 12.0,
+		// In some layouts, the answer sits on the same row to the right
+		includeSameRowRight: true,
+		// Ensure we only take tokens to the right of the label (exclude left column values like 171)
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		// Slightly widen same-row tolerance
+		rowEps: 2.0,
+		// Enable debug logs for this field
+		debug: false,
+		clusterThreshold: 6.0,
+		expandRightWithin: 20.0,
+	},
 	{
 		label: 'Any other information which in your opinion Gatehouse Bank plc should note:',
 		labelIncludes: 'Any other information which in your opinion Gatehouse Bank plc should note',
@@ -80,7 +101,41 @@ export function extractTextareaFields(spans) {
 		};
 
 		const a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes });
-		const b = findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes });
+
+		// Prefer picking B below A when using includes/altIncludes to disambiguate duplicates
+		const findBlockBelowA = (aBlock, { exact, includes, altIncludes }) => {
+			const samePage = (b) => b.page === aBlock.page;
+			const isBelow = (b) => b.topStart > aBlock.topEnd;
+
+			let candidates = [];
+
+			if (exact) {
+				candidates = blocks.filter(b => b.labelText === exact && samePage(b) && isBelow(b));
+			} else {
+				const needles = [includes, altIncludes]
+					.filter(Boolean)
+					.map(s => String(s).toLowerCase());
+				if (needles.length > 0) {
+					candidates = blocks.filter(b => samePage(b) && isBelow(b) && needles.some(n => String(b.labelText).toLowerCase().includes(n)));
+				}
+			}
+
+			if (candidates.length > 0) {
+				return candidates.sort((b1, b2) => (b1.topStart - aBlock.topEnd) - (b2.topStart - aBlock.topEnd))[0];
+			}
+
+			// Fallback to generic finder if nothing found below
+			return findBlock({ exact, includes, altIncludes });
+		};
+
+		const b = a
+			? findBlockBelowA(a, { exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes })
+			: findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes });
+		if (f.debug) {
+			console.log('[textarea] A block for', f.label, a ? { page: a.page, left: a.left, topStart: a.topStart, topEnd: a.topEnd } : null);
+			console.log('[textarea] B block for', f.nextLabel || f.nextLabelIncludes, b ? { page: b.page, left: b.left, topStart: b.topStart, topEnd: b.topEnd } : null);
+			console.log('[textarea] options', { leftBand: f.leftBand, clusterThreshold: f.clusterThreshold, expandRightWithin: f.expandRightWithin, includeSameRowRight: f.includeSameRowRight, rowEps: f.rowEps, onlyRightOfA: f.onlyRightOfA, rightSlack: f.rightSlack });
+		}
 
 		if (!a || !b) {
 			out[f.label] = null;
@@ -90,8 +145,11 @@ export function extractTextareaFields(spans) {
 		const value = extractBoundedAnswer(
 			{ labelA: a, labelB: b },
 			spans,
-			{ leftBand: f.leftBand, clusterThreshold: f.clusterThreshold, expandRightWithin: f.expandRightWithin }
+			{ leftBand: f.leftBand, clusterThreshold: f.clusterThreshold, expandRightWithin: f.expandRightWithin, includeSameRowRight: f.includeSameRowRight, rowEps: f.rowEps, onlyRightOfA: f.onlyRightOfA, rightSlack: f.rightSlack, debug: f.debug }
 		);
+		if (f.debug) {
+			console.log('[textarea] value for', f.label, '=>', value);
+		}
 		out[f.label] = value ?? null;
 	}
 
