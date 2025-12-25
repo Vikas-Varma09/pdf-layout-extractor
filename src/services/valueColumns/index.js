@@ -2,6 +2,7 @@ import { extractValueAtLeft } from './valueAtLeftExtractor.js';
 import { PROPERTY_TYPE_FIELDS } from '../fields/propertyTypeFields/config.js';
 import { ACCOMMODATION_FIELDS } from '../fields/accommodationFields/config.js';
 import { CURRENT_OCCUPANCY_FIELDS } from '../fields/currentOccupancyFields/config.js';
+import { NEW_BUILD_FIELDS } from '../fields/newBuild/config.js';
 
 export function extractValueColumns(spans) {
 	const out = {};
@@ -19,6 +20,12 @@ export function extractValueColumns(spans) {
 	}
 	// Include CURRENT OCCUPANCY value columns
 	for (const f of CURRENT_OCCUPANCY_FIELDS) {
+		if (f.source === 'valueCols' && typeof f.targetLeft === 'number') {
+			out[f.key] = extractValueAtLeft(spans, { label: f.key, targetLeft: f.targetLeft });
+		}
+	}
+	// Include NEW BUILD value columns (future-proofing)
+	for (const f of NEW_BUILD_FIELDS) {
 		if (f.source === 'valueCols' && typeof f.targetLeft === 'number') {
 			out[f.key] = extractValueAtLeft(spans, { label: f.key, targetLeft: f.targetLeft });
 		}

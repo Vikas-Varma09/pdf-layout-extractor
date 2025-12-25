@@ -5,6 +5,7 @@ import { buildPropertyTypeGroup } from './src/services/fields/propertyTypeFields
 import { buildAccommodationGroup } from './src/services/fields/accommodationFields/index.js';
 import { buildGeneralRemarkGroup } from './src/services/fields/generalRemark/index.js';
 import { buildCurrentOccupancyGroup } from './src/services/fields/currentOccupancyFields/index.js';
+import { buildNewBuildGroup } from './src/services/fields/newBuild/index.js';
 
 /**
  * POST /api/extract-fields
@@ -23,8 +24,9 @@ export async function extractFieldsController(req, res) {
 		const propertyType = buildPropertyTypeGroup({ mapped: {}, checkbox, valueCols, spans });
 		const accommodation = buildAccommodationGroup({ spans, checkbox, valueCols });
 		const currentOccupancy = buildCurrentOccupancyGroup({ spans, checkbox, valueCols });
+		const newBuild = buildNewBuildGroup({ spans, checkbox, valueCols });
 		const generalRemark = buildGeneralRemarkGroup({ spans });
-		return res.json({ propertyType, accommodation, currentOccupancy, generalRemark });
+		return res.json({ propertyType, accommodation, currentOccupancy, newBuild, generalRemark });
 	} catch (err) {
 		console.error('Extraction error:', err);
 		return res.status(500).json({ error: 'Failed to extract fields' });
