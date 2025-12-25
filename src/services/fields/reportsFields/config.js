@@ -1,0 +1,15 @@
+export const REPORTS_FIELDS = [
+	{ key: 'Timber/Damp', source: 'checkbox', outputKey: 'isTimberDamp', left: 62.04 },
+    { key: 'Mining', source: 'checkbox', outputKey: 'isMining', left: 77.78 },
+    { key: 'Electrical', source: 'checkbox', outputKey: 'isElectrical', left: 93.23 },
+    { key: 'Drains', source: 'checkbox', outputKey: 'isDrains', left: 62.04 },
+    { key: 'Structural Engineers', source: 'checkbox', outputKey: 'isStructuralEngineers', left: 77.78 },
+    { key: 'Arboricultural', source: 'checkbox', outputKey: 'isArboricultural', left: 93.23 },
+    { key: 'Mundic', source: 'checkbox', outputKey: 'isMundic', left: 62.04 },
+    { key: 'Wall Ties', source: 'checkbox', outputKey: 'isWallTies', left: 77.78 },
+    { key: 'Roof', source: 'checkbox', outputKey: 'isRoof', left: 93.23 },
+    { key: 'Metalliferous', source: 'checkbox', outputKey: 'isMetalliferous', left: 62.04 },
+    { key: 'Sulfate (Red ash)', source: 'checkbox', outputKey: 'isSulfateRedAsh', left: 77.78 },
+    { key: 'Other +', source: 'checkbox', outputKey: 'isOtherReport', left: 93.23 },
+    { key: 'If Other, please provide details', source: 'textarea', outputKey: 'otherReportDetails', nextLabel: 'ESSENTIAL REPAIRS', textareaMapKey: 'reports_otherDetails' },
+];

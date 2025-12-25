@@ -107,6 +107,28 @@ const TEXTAREA_FIELDS = [
 		onlyRightOfA: true,
 		maxBelowA: 6.0,
 	},
+	// Reports: Other details (bounded to ESSENTIAL REPAIRS)
+	{
+		label: 'If Other, please provide details',
+		labelIncludes: 'If Other, please provide details',
+		nextLabel: 'ESSENTIAL REPAIRS',
+		nextLabelIncludes: 'ESSENTIAL REPAIRS',
+		mapKey: 'reports_otherDetails',
+		// Scope strictly to the REPORTS section to avoid collisions
+		belowLabelIncludes: 'REPORTS',
+		// Use clustering rather than a hard left band
+		leftBand: null,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 60.0,
+		maxBelowA: 25.0,
+		debug: false,
+		// If next label is on next page, allow capturing to end of page
+		allowCrossPage: false,
+		requireSamePageWithB: true,
+	},
 ];
 
 /**
@@ -125,22 +147,34 @@ export function extractTextareaFields(spans) {
 	const blocks = buildLabelBlocks(spans);
 
 	for (const f of TEXTAREA_FIELDS) {
-		const findBlock = ({ exact, includes, altIncludes, belowTop }) => {
+		const findBlock = ({ exact, includes, altIncludes, belowTop, samePageAs }) => {
 			// 1) exact match
 			if (exact) {
-				const exactBlock = blocks.find(b => b.labelText === exact && (typeof belowTop !== 'number' || b.topStart > belowTop));
+				const exactBlock = blocks.find(b =>
+					b.labelText === exact &&
+					(typeof belowTop !== 'number' || b.topStart > belowTop) &&
+					(samePageAs === undefined || b.page === samePageAs)
+				);
 				if (exactBlock) return exactBlock;
 			}
 			// 2) includes match (primary)
 			if (includes) {
 				const needle = String(includes).toLowerCase();
-				const inc = blocks.find(b => String(b.labelText).toLowerCase().includes(needle) && (typeof belowTop !== 'number' || b.topStart > belowTop));
+				const inc = blocks.find(b =>
+					String(b.labelText).toLowerCase().includes(needle) &&
+					(typeof belowTop !== 'number' || b.topStart > belowTop) &&
+					(samePageAs === undefined || b.page === samePageAs)
+				);
 				if (inc) return inc;
 			}
 			// 3) includes match (alternate)
 			if (altIncludes) {
 				const needleAlt = String(altIncludes).toLowerCase();
-				const incAlt = blocks.find(b => String(b.labelText).toLowerCase().includes(needleAlt) && (typeof belowTop !== 'number' || b.topStart > belowTop));
+				const incAlt = blocks.find(b =>
+					String(b.labelText).toLowerCase().includes(needleAlt) &&
+					(typeof belowTop !== 'number' || b.topStart > belowTop) &&
+					(samePageAs === undefined || b.page === samePageAs)
+				);
 				if (incAlt) return incAlt;
 			}
 			return null;
@@ -153,7 +187,21 @@ export function extractTextareaFields(spans) {
 			if (anchor) belowTop = anchor.topEnd;
 		}
 
-		const a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop });
+		let a = null;
+		let b = null;
+
+		if (f.requireSamePageWithB) {
+			// Find B first (with any belowTop anchor), then restrict A to B's page
+			b = findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes, belowTop });
+			if (b) {
+				a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop, samePageAs: b.page });
+			} else {
+				// Fall back to previous behavior if B not found
+				a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop });
+			}
+		} else {
+			a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop });
+		}
 
 		// Prefer picking B below A when using includes/altIncludes to disambiguate duplicates
 		const findBlockBelowA = (aBlock, { exact, includes, altIncludes }) => {
@@ -181,9 +229,11 @@ export function extractTextareaFields(spans) {
 			return findBlock({ exact, includes, altIncludes, belowTop });
 		};
 
-		const b = a
-			? findBlockBelowA(a, { exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes })
-			: findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes, belowTop });
+		if (!b) {
+			b = a
+				? findBlockBelowA(a, { exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes })
+				: findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes, belowTop });
+		}
 		if (f.debug) {
 			console.log('[textarea] A block for', f.label, a ? { page: a.page, left: a.left, topStart: a.topStart, topEnd: a.topEnd } : null);
 			console.log('[textarea] B block for', f.nextLabel || f.nextLabelIncludes, b ? { page: b.page, left: b.left, topStart: b.topStart, topEnd: b.topEnd } : null);
@@ -198,7 +248,7 @@ export function extractTextareaFields(spans) {
 		const value = extractBoundedAnswer(
 			{ labelA: a, labelB: b },
 			spans,
-			{ leftBand: f.leftBand, clusterThreshold: f.clusterThreshold, expandRightWithin: f.expandRightWithin, includeSameRowRight: f.includeSameRowRight, rowEps: f.rowEps, onlyRightOfA: f.onlyRightOfA, rightSlack: f.rightSlack, debug: f.debug, stripLabelPrefixes: f.stripLabelPrefixes, stripTokens: f.stripTokens, labelAText: a?.labelText }
+			{ leftBand: f.leftBand, clusterThreshold: f.clusterThreshold, expandRightWithin: f.expandRightWithin, includeSameRowRight: f.includeSameRowRight, rowEps: f.rowEps, onlyRightOfA: f.onlyRightOfA, rightSlack: f.rightSlack, allowCrossPage: f.allowCrossPage, debug: f.debug, stripLabelPrefixes: f.stripLabelPrefixes, stripTokens: f.stripTokens, labelAText: a?.labelText }
 		);
 		if (f.debug) {
 			console.log('[textarea] value for', f.label, '=>', value);

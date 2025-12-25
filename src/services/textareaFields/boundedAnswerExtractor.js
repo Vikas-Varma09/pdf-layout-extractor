@@ -9,9 +9,17 @@
  * @returns {string|null}
  */
 export function extractBoundedAnswer(bounds, spans, options = {}) {
-	const { labelA, labelB } = bounds;
+	const { labelA } = bounds;
+	let { labelB } = bounds;
 	if (!labelA || !labelB) return null;
-	if (labelA.page !== labelB.page) return null;
+	// Allow capturing until end of A's page when B is on a later page
+	if (labelA.page !== labelB.page) {
+		if (options.allowCrossPage) {
+			labelB = { ...labelA, topStart: Number.POSITIVE_INFINITY, topEnd: Number.POSITIVE_INFINITY };
+		} else {
+			return null;
+		}
+	}
 
 	let filtered = spans
 		.filter(s => {
