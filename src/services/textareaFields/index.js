@@ -129,6 +129,25 @@ const TEXTAREA_FIELDS = [
 		allowCrossPage: false,
 		requireSamePageWithB: true,
 	},
+	// Essential Repairs: details (bounded to 'Is re-inspection required?')
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		nextLabel: 'Is re-inspection required?',
+		nextLabelIncludes: 'Is re-inspection required?',
+		mapKey: 'essentialRepairs_essentialRepairsDetails',
+		// Scope to the ESSENTIAL REPAIRS section
+		belowLabelIncludes: 'ESSENTIAL REPAIRS',
+		leftBand: null,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 60.0,
+		maxBelowA: 20.0,
+		allowCrossPage: false,
+		requireSamePageWithB: true,
+	},
 ];
 
 /**

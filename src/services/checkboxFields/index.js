@@ -4,6 +4,7 @@ import { PROPERTY_TYPE_FIELDS } from '../fields/propertyTypeFields/config.js';
 import { CURRENT_OCCUPANCY_FIELDS } from '../fields/currentOccupancyFields/config.js';
 import { NEW_BUILD_FIELDS } from '../fields/newBuild/config.js';
 import { REPORTS_FIELDS } from '../fields/reportsFields/config.js';
+import { ESSENTIAL_REPAIRS_FIELDS } from '../fields/essentialRepairsFields/config.js';
 
 function extractSingleCheckbox(spans, { label, left, topThreshold = 0.6, leftThreshold = 2.0 }) {
 	if (!Array.isArray(spans)) return null;
@@ -37,6 +38,7 @@ export function extractCheckboxFields(spans) {
 		...CURRENT_OCCUPANCY_FIELDS,
 		...NEW_BUILD_FIELDS,
 		...REPORTS_FIELDS,
+		...ESSENTIAL_REPAIRS_FIELDS,
 	]
 		.filter(f => f.source === 'checkbox' && typeof f.yesLeft === 'number' && typeof f.noLeft === 'number')
 		.map(f => ({ label: f.key, yesLeft: f.yesLeft, noLeft: f.noLeft }));
@@ -51,6 +53,7 @@ export function extractCheckboxFields(spans) {
 		...CURRENT_OCCUPANCY_FIELDS,
 		...NEW_BUILD_FIELDS,
 		...REPORTS_FIELDS,
+		...ESSENTIAL_REPAIRS_FIELDS,
 	]
 		.filter(f => f.source === 'checkbox' && typeof f.left === 'number' && (typeof f.yesLeft !== 'number' || typeof f.noLeft !== 'number'))
 		.map(f => ({ label: f.key, left: f.left }));
