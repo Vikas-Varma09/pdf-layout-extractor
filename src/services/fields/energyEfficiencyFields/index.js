@@ -1,6 +1,6 @@
 import { ENERGY_EFFICIENCY_FIELDS } from './config.js';
 
-function pickSingleChoiceOnRow(spans, rowLabel, options, topThreshold = 0.6, leftThreshold = 2.0) {
+function pickSingleChoiceOnRow(spans, rowLabel, options, topThreshold = 0.6, leftThreshold = 2.0, requireMarker = true) {
 	if (!Array.isArray(spans) || !rowLabel || !Array.isArray(options)) return null;
 	const labelSpan = spans.find(s => s.text === rowLabel);
 	if (!labelSpan) return null;
@@ -18,7 +18,10 @@ function pickSingleChoiceOnRow(spans, rowLabel, options, topThreshold = 0.6, lef
 		if (near) return opt.value;
 	}
 
-	// Fallback: pick the nearest non-empty text to any option and return its option value
+	// If an explicit marker is required, return null when none found
+	if (requireMarker) return null;
+
+	// Fallback: pick the nearest non-empty text to any option and return its option value (legacy behavior)
 	let best = null;
 	for (const opt of options) {
 		const cand = spans
@@ -52,7 +55,8 @@ export function buildEnergyEfficiencyGroup({ spans, valueCols }) {
 				sourceKey,
 				item.options || [],
 				item.topThreshold ?? 0.6,
-				item.leftThreshold ?? 2.0
+				item.leftThreshold ?? 2.0,
+				item.requireMarker ?? true
 			);
 		}
 		out[outputKey] = value ?? null;
