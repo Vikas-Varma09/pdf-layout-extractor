@@ -8,14 +8,69 @@ import { isNumericText } from '../../../fieldMapper.js';
  * @returns {string|null}
  */
 export function extractValueAtLeft(spans, config) {
-	const { label, targetLeft, topThreshold = 0.6, leftThreshold = 2.0 } = config;
+	const {
+		label,
+		targetLeft,
+		topThreshold = 0.6,
+		leftThreshold = 2.0,
+		// Combine digits: either gather within a window or use explicit additional lefts
+		combineAdjacentDigits = false,
+		adjacentLeftWindow = 2.0,
+		adjacentRightWindow = 2.0,
+		additionalLefts = undefined,
+	} = config;
 	if (!Array.isArray(spans) || spans.length === 0) return null;
 	if (!label || typeof targetLeft !== 'number') return null;
 
 	const labelSpan = spans.find(s => s.text === label);
 	if (!labelSpan) return null;
 
-	// Candidates on same row
+	// Helper to find best numeric near a given left on label row
+	function pickNearLeft(left) {
+		const candidates = spans
+			.filter(s =>
+				s.page === labelSpan.page &&
+				Math.abs(s.top - labelSpan.top) < topThreshold &&
+				Math.abs(s.left - left) <= leftThreshold &&
+				isNumericText(String(s.text).trim())
+			)
+			.map(s => ({ s, leftDelta: Math.abs(s.left - left) }))
+			.sort((a, b) => a.leftDelta - b.leftDelta);
+		return candidates.length > 0 ? candidates[0].s : null;
+	}
+
+	// If combining via explicit additional lefts, pick at each and concatenate in left order
+	if (combineAdjacentDigits && Array.isArray(additionalLefts) && additionalLefts.length > 0) {
+		const allLefts = [targetLeft, ...additionalLefts].sort((a, b) => a - b);
+		const tokens = [];
+		for (const L of allLefts) {
+			const tok = pickNearLeft(L);
+			if (tok) tokens.push(String(tok.text).trim());
+		}
+		const joined = tokens.join('');
+		if (joined.length > 0 && /^[0-9]+$/.test(joined)) return joined;
+		// fall through to normal behavior if not purely digits
+	}
+
+	// If combining by window, gather all numeric tokens in the window to the right/left of targetLeft
+	if (combineAdjacentDigits && (!additionalLefts || additionalLefts.length === 0)) {
+		const verticalWindow = typeof config.combineVerticalWindow === 'number' ? config.combineVerticalWindow : topThreshold;
+		const windowCandidates = spans
+			.filter(s =>
+				s.page === labelSpan.page &&
+				Math.abs(s.top - labelSpan.top) <= verticalWindow &&
+				s.left >= (targetLeft - adjacentLeftWindow) &&
+				s.left <= (targetLeft + adjacentRightWindow) &&
+				isNumericText(String(s.text).trim())
+			)
+			.sort((a, b) => a.left - b.left);
+		if (windowCandidates.length > 0) {
+			const joined = windowCandidates.map(s => String(s.text).trim()).join('');
+			if (joined.length > 0 && /^[0-9]+$/.test(joined)) return joined;
+		}
+	}
+
+	// Default: single best near targetLeft
 	const rowCandidates = spans
 		.filter(s =>
 			s.page === labelSpan.page &&
