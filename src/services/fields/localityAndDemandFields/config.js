@@ -18,11 +18,11 @@ export const LOCALITY_AND_DEMAND_FIELDS = [
     { key: 'Falling', source: 'checkbox', outputKey: 'isDemandFalling', left: 46.37, checkboxMapKey: 'demand_Falling', belowAnchorIncludes: 'Is demand for this type of property', leftThreshold: 2.5, topThreshold: 1.2, allowRowFallback: true, fallbackMaxLeft: 3.0 },
 
     { key: 'compulsory purchase or clearance?', source: 'checkbox', outputKey: 'isAffectedByCompulsoryPurchase', yesLeft: 40.15, noLeft: 46.2  },
-
+    { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'compulsoryPurchaseDetails', nextLabel: 'Are there any vacant or boarded up', textareaMapKey: 'locality_compulsoryPurchaseDetails' },
     { key: 'properties in close proximity?', source: 'checkbox', outputKey: 'isVacantOrBoardedPropertiesNearby', yesLeft: 40.15, noLeft: 46.2  },
-
+    { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'vacantOrBoardedDetails', nextLabel: 'Is there a possibility of occupancy restriction?', textareaMapKey: 'locality_vacantOrBoardedDetails' },
     { key: 'Is there a possibility of occupancy restriction?', source: 'checkbox', outputKey: 'isOccupancyRestrictionPossible', yesLeft: 40.15, noLeft: 46.2  },
-
+    { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'occupancyRestrictionDetails', nextLabel: 'Is the property close to any high voltage', textareaMapKey: 'locality_occupancyRestrictionDetails' },
     { key: 'electrical supply equipment?', source: 'checkbox', outputKey: 'isCloseToHighVoltageEquipment', yesLeft: 40.15, noLeft: 46.2  },
-
+    { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'highVoltageEquipmentDetails', nextLabel: 'SERVICES', textareaMapKey: 'locality_highVoltageEquipmentDetails' },
 ]

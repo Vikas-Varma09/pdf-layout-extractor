@@ -148,6 +148,98 @@ const TEXTAREA_FIELDS = [
 		allowCrossPage: false,
 		requireSamePageWithB: true,
 	},
+	// Locality & Demand: compulsory purchase details
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		nextLabel: 'Are there any vacant or boarded up',
+		nextLabelIncludes: 'Are there any vacant or boarded up',
+		nextLabelAltIncludes: 'properties in close proximity?',
+		nextLabelLeftMax: 20.0,
+		mapKey: 'locality_compulsoryPurchaseDetails',
+		belowLabelIncludes: 'LOCALITY & DEMAND',
+		anchorBeforeIncludes: 'compulsory purchase or clearance?',
+		leftBand: 16.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		maxBelowA: 12.0,
+		requireSamePageWithB: true,
+		stripLabelPrefixes: true,
+		stripTokens: ['If Yes, please provide details'],
+		debug: false,
+	},
+	// Locality & Demand: vacant/boarded details
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		nextLabel: 'Is there a possibility of occupancy restriction?',
+		nextLabelIncludes: 'Is there a possibility of occupancy restriction?',
+		nextLabelAltIncludes: 'possibility of occupancy restriction?',
+		nextLabelLeftMax: 20.0,
+		mapKey: 'locality_vacantOrBoardedDetails',
+		belowLabelIncludes: 'LOCALITY & DEMAND',
+		anchorBeforeIncludes: 'properties in close proximity?',
+		leftBand: 16.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		maxBelowA: 12.0,
+		requireSamePageWithB: true,
+		stripLabelPrefixes: true,
+		stripTokens: ['If Yes, please provide details'],
+		debug: false,
+	},
+	// Locality & Demand: occupancy restriction details
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		nextLabel: 'Is the property close to any high voltage',
+		nextLabelIncludes: 'Is the property close to any high voltage',
+		nextLabelAltIncludes: 'electrical supply equipment?',
+		nextLabelLeftMax: 20.0,
+		mapKey: 'locality_occupancyRestrictionDetails',
+		belowLabelIncludes: 'LOCALITY & DEMAND',
+		anchorBeforeIncludes: 'Is there a possibility of occupancy restriction?',
+		leftBand: 16.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		maxBelowA: 12.0,
+		requireSamePageWithB: true,
+		stripLabelPrefixes: true,
+		stripTokens: ['If Yes, please provide details'],
+		debug: false,
+	},
+	// Locality & Demand: high voltage equipment details
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		nextLabel: 'SERVICES',
+		nextLabelIncludes: 'SERVICES',
+		nextLabelAltIncludes: null,
+		nextLabelLeftMax: 20.0,
+		mapKey: 'locality_highVoltageEquipmentDetails',
+		belowLabelIncludes: 'LOCALITY & DEMAND',
+		anchorBeforeIncludes: 'electrical supply equipment?',
+		leftBand: 16.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		maxBelowA: 12.0,
+		requireSamePageWithB: true,
+		stripLabelPrefixes: true,
+		stripTokens: ['If Yes, please provide details'],
+		debug: false,
+	},
 ];
 
 /**
@@ -203,40 +295,80 @@ export function extractTextareaFields(spans) {
 		let belowTop = undefined;
 		if (f.belowLabel || f.belowLabelIncludes) {
 			const anchor = findBlock({ exact: f.belowLabel, includes: f.belowLabelIncludes });
-			if (anchor) belowTop = anchor.topEnd;
+			if (anchor) {
+				belowTop = anchor.topEnd;
+			} else {
+				// If a section anchor was requested but not found, avoid global fallback
+				out[f.label] = null;
+				continue;
+			}
 		}
 
 		let a = null;
 		let b = null;
 
-		if (f.requireSamePageWithB) {
-			// Find B first (with any belowTop anchor), then restrict A to B's page
-			b = findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes, belowTop });
-			if (b) {
-				a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop, samePageAs: b.page });
+		// If a specific preceding anchor is provided, choose A as the first matching label below it on the same page
+		if (f.anchorBeforeIncludes) {
+			const before = findBlock({ includes: f.anchorBeforeIncludes, belowTop });
+			if (before) {
+				a = findBlock({
+					exact: f.label,
+					includes: f.labelIncludes,
+					altIncludes: f.labelAltIncludes,
+					belowTop: before.topEnd,
+					samePageAs: before.page,
+				});
 			} else {
-				// Fall back to previous behavior if B not found
-				a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop });
+				// If we cannot find the preceding question, do not guess globally
+				out[f.label] = null;
+				continue;
+			}
+		}
+
+		if (f.requireSamePageWithB) {
+			// Prefer finding B relative to A (same page, below A, with optional left constraints)
+			if (a) {
+				b = findBlockBelowA(a, {
+					exact: f.nextLabel,
+					includes: f.nextLabelIncludes,
+					altIncludes: f.nextLabelAltIncludes,
+					leftMax: f.nextLabelLeftMax,
+					leftMin: f.nextLabelLeftMin,
+				});
+			}
+			// Fallback: generic B finder constrained by any section anchor
+			if (!b) {
+				b = findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes, belowTop });
+			}
+			// Do not continue if either A or B could not be reliably located
+			if (!b || !a) {
+				out[f.label] = null;
+				continue;
 			}
 		} else {
-			a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop });
+			if (!a) {
+				a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop });
+			}
 		}
 
 		// Prefer picking B below A when using includes/altIncludes to disambiguate duplicates
-		const findBlockBelowA = (aBlock, { exact, includes, altIncludes }) => {
+		function findBlockBelowA(aBlock, { exact, includes, altIncludes, leftMax, leftMin }) {
 			const samePage = (b) => b.page === aBlock.page;
 			const isBelow = (b) => b.topStart > aBlock.topEnd;
+			const leftOk = (b) =>
+				(typeof leftMax !== 'number' || b.left <= leftMax) &&
+				(typeof leftMin !== 'number' || b.left >= leftMin);
 
 			let candidates = [];
 
 			if (exact) {
-				candidates = blocks.filter(b => b.labelText === exact && samePage(b) && isBelow(b));
+				candidates = blocks.filter(b => b.labelText === exact && samePage(b) && isBelow(b) && leftOk(b));
 			} else {
 				const needles = [includes, altIncludes]
 					.filter(Boolean)
 					.map(s => String(s).toLowerCase());
 				if (needles.length > 0) {
-					candidates = blocks.filter(b => samePage(b) && isBelow(b) && needles.some(n => String(b.labelText).toLowerCase().includes(n)));
+					candidates = blocks.filter(b => samePage(b) && isBelow(b) && leftOk(b) && needles.some(n => String(b.labelText).toLowerCase().includes(n)));
 				}
 			}
 
@@ -246,11 +378,17 @@ export function extractTextareaFields(spans) {
 
 			// Fallback to generic finder if nothing found below
 			return findBlock({ exact, includes, altIncludes, belowTop });
-		};
+		}
 
 		if (!b) {
 			b = a
-				? findBlockBelowA(a, { exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes })
+				? findBlockBelowA(a, {
+					exact: f.nextLabel,
+					includes: f.nextLabelIncludes,
+					altIncludes: f.nextLabelAltIncludes,
+					leftMax: f.nextLabelLeftMax,
+					leftMin: f.nextLabelLeftMin,
+				  })
 				: findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes, belowTop });
 		}
 		if (f.debug) {
@@ -267,7 +405,21 @@ export function extractTextareaFields(spans) {
 		const value = extractBoundedAnswer(
 			{ labelA: a, labelB: b },
 			spans,
-			{ leftBand: f.leftBand, clusterThreshold: f.clusterThreshold, expandRightWithin: f.expandRightWithin, includeSameRowRight: f.includeSameRowRight, rowEps: f.rowEps, onlyRightOfA: f.onlyRightOfA, rightSlack: f.rightSlack, allowCrossPage: f.allowCrossPage, debug: f.debug, stripLabelPrefixes: f.stripLabelPrefixes, stripTokens: f.stripTokens, labelAText: a?.labelText }
+			{
+				leftBand: f.leftBand,
+				clusterThreshold: f.clusterThreshold,
+				expandRightWithin: f.expandRightWithin,
+				includeSameRowRight: f.includeSameRowRight,
+				rowEps: f.rowEps,
+				onlyRightOfA: f.onlyRightOfA,
+				rightSlack: f.rightSlack,
+				allowCrossPage: f.allowCrossPage,
+				maxBelowA: f.maxBelowA,
+				debug: f.debug,
+				stripLabelPrefixes: f.stripLabelPrefixes,
+				stripTokens: f.stripTokens,
+				labelAText: a?.labelText
+			}
 		);
 		if (f.debug) {
 			console.log('[textarea] value for', f.label, '=>', value);
