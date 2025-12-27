@@ -12,6 +12,7 @@ import { buildEssentialRepairsGroup } from './src/services/fields/essentialRepai
 import { buildLocalityAndDemandGroup } from './src/services/fields/localityAndDemandFields/index.js';
 import { buildServicesGroup } from './src/services/fields/servicesFields/index.js';
 import { buildConstructionGroup } from './src/services/fields/constructionFields/index.js';
+import { extractRawTextFromOCR } from './src/services/ocrService.js';
 
 /**
  * POST /api/extract-fields
@@ -23,6 +24,12 @@ export async function extractFieldsController(req, res) {
 			return res.status(400).json({ error: 'Missing PDF file in "file" field.' });
 		}
 
+		// Create a copy of the buffer for OCR (in case the original gets consumed/detached)
+		const pdfBuffer = Buffer.isBuffer(req.file.buffer) 
+			? Buffer.from(req.file.buffer) 
+			: Buffer.from(req.file.buffer);
+
+		// Extract structured fields
 		const spans = await extractSpansFromPdfBuffer(req.file.buffer);
 		const checkbox = extractCheckboxFields(spans);
 		const valueCols = extractValueColumns(spans);
@@ -38,7 +45,24 @@ export async function extractFieldsController(req, res) {
 		const services = buildServicesGroup({ spans, checkbox, valueCols });
 		const construction = buildConstructionGroup({ spans, checkbox, valueCols });
 		const generalRemark = buildGeneralRemarkGroup({ spans });
-		return res.json({ propertyType, accommodation, currentOccupancy, newBuild, reports, energyEfficiency, essentialRepairs, localityAndDemand, services, construction, generalRemark });
+
+		// Extract raw text using OCR service (use the copy we created)
+		const rawText = await extractRawTextFromOCR(pdfBuffer);
+
+		return res.json({ 
+			propertyType, 
+			accommodation, 
+			currentOccupancy, 
+			newBuild, 
+			reports, 
+			energyEfficiency, 
+			essentialRepairs, 
+			localityAndDemand, 
+			services, 
+			construction, 
+			generalRemark,
+			rawText: rawText || null
+		});
 	} catch (err) {
 		console.error('Extraction error:', err);
 		return res.status(500).json({ error: 'Failed to extract fields' });
