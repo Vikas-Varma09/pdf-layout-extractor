@@ -11,6 +11,7 @@ import { buildEnergyEfficiencyGroup } from './src/services/fields/energyEfficien
 import { buildEssentialRepairsGroup } from './src/services/fields/essentialRepairsFields/index.js';
 import { buildLocalityAndDemandGroup } from './src/services/fields/localityAndDemandFields/index.js';
 import { buildServicesGroup } from './src/services/fields/servicesFields/index.js';
+import { buildConstructionGroup } from './src/services/fields/constructionFields/index.js';
 
 /**
  * POST /api/extract-fields
@@ -35,8 +36,9 @@ export async function extractFieldsController(req, res) {
 		const essentialRepairs = buildEssentialRepairsGroup({ spans, checkbox, valueCols });
 		const localityAndDemand = buildLocalityAndDemandGroup({ spans, checkbox, valueCols });
 		const services = buildServicesGroup({ spans, checkbox, valueCols });
+		const construction = buildConstructionGroup({ spans, checkbox, valueCols });
 		const generalRemark = buildGeneralRemarkGroup({ spans });
-		return res.json({ propertyType, accommodation, currentOccupancy, newBuild, reports, energyEfficiency, essentialRepairs, localityAndDemand, services, generalRemark });
+		return res.json({ propertyType, accommodation, currentOccupancy, newBuild, reports, energyEfficiency, essentialRepairs, localityAndDemand, services, construction, generalRemark });
 	} catch (err) {
 		console.error('Extraction error:', err);
 		return res.status(500).json({ error: 'Failed to extract fields' });

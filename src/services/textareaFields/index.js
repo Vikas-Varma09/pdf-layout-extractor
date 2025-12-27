@@ -106,6 +106,97 @@ const TEXTAREA_FIELDS = [
 		// This section often wraps and is wide; allow more right drift
 		expandRightWithin: 50.0,
 	},
+	// Construction: non-standard construction type
+	{
+		label: 'If non-standard construction specify name of system or type:',
+		nextLabel: 'External finish:',
+		nextLabelIncludes: 'External finish',
+		mapKey: 'nonStandardConstructionType',
+		leftBand: 10.0,
+		clusterThreshold: 6.0,
+		expandRightWithin: 20.0,
+		maxBelowA: 6.0,
+	},
+	// Construction: Main Walls (side-by-side layout)
+	{
+		label: 'Main Walls:',
+		nextLabel: 'Main Roof:',
+		nextLabelIncludes: 'Main Roof',
+		mapKey: 'mainWalls',
+		// Answer is on the same row to the right of the label
+		includeSameRowRight: true,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 1.2,
+		// Don't restrict by leftBand to allow capturing text further right
+		leftBand: null,
+		clusterThreshold: 6.0,
+		expandRightWithin: 40.0,
+		// Very tight vertical window - only same row, no below
+		maxBelowA: 0.5,
+		// Strip common checkbox tokens that might leak in
+		stripTokens: ['X', 'Yes', 'No', 'N/A'],
+	},
+	// Construction: Main Roof (side-by-side layout)
+	{
+		label: 'Main Roof:',
+		nextLabel: 'Garage:',
+		nextLabelIncludes: 'Garage',
+		mapKey: 'mainRoof',
+		// Answer is on the same row to the right of the label
+		includeSameRowRight: true,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 1.2,
+		// Don't restrict by leftBand to allow capturing text further right
+		leftBand: null,
+		clusterThreshold: 6.0,
+		expandRightWithin: 40.0,
+		// Very tight vertical window - only same row, no below
+		maxBelowA: 0.5,
+		// Strip common checkbox tokens that might leak in
+		stripTokens: ['X', 'Yes', 'No', 'N/A'],
+	},
+	// Construction: Garage (side-by-side layout)
+	{
+		label: 'Garage:',
+		nextLabel: 'Outbuildings:',
+		nextLabelIncludes: 'Outbuildings',
+		mapKey: 'garageConstruction',
+		// Answer is on the same row to the right of the label
+		includeSameRowRight: true,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 1.2,
+		// Don't restrict by leftBand to allow capturing text further right
+		leftBand: null,
+		clusterThreshold: 6.0,
+		expandRightWithin: 40.0,
+		// Very tight vertical window - only same row, no below
+		maxBelowA: 0.5,
+		// Strip common checkbox tokens that might leak in
+		stripTokens: ['X', 'Yes', 'No', 'N/A'],
+	},
+	// Construction: Outbuildings (side-by-side layout)
+	{
+		label: 'Outbuildings:',
+		nextLabel: 'Are there any alterations or extensions?',
+		nextLabelIncludes: 'Are there any alterations or extensions?',
+		mapKey: 'outbuildingsConstruction',
+		// Answer is on the same row to the right of the label
+		includeSameRowRight: true,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 1.2,
+		// Don't restrict by leftBand to allow capturing text further right
+		leftBand: null,
+		clusterThreshold: 6.0,
+		expandRightWithin: 40.0,
+		// Very tight vertical window - only same row, no below
+		maxBelowA: 0.5,
+		// Strip common checkbox tokens that might leak in
+		stripTokens: ['X', 'Yes', 'No', 'N/A'],
+	},
 	// New Build: "Other" certificate details
 	{
 		label: 'If Other, please provide details',

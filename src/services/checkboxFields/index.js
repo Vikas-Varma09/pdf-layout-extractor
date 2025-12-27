@@ -7,6 +7,7 @@ import { REPORTS_FIELDS } from '../fields/reportsFields/config.js';
 import { ESSENTIAL_REPAIRS_FIELDS } from '../fields/essentialRepairsFields/config.js';
 import { LOCALITY_AND_DEMAND_FIELDS } from '../fields/localityAndDemandFields/config.js';
 import { REPORTS_FIELDS as SERVICES_REPORTS_FIELDS } from '../fields/servicesFields/config.js';
+import { CONSTRUCTION_FIELDS } from '../fields/constructionFields/config.js';
 
 function extractSingleCheckbox(
 	spans,
@@ -138,6 +139,7 @@ export function extractCheckboxFields(spans) {
 		...SERVICES_REPORTS_FIELDS,
 		...LOCALITY_AND_DEMAND_FIELDS,
 		...ESSENTIAL_REPAIRS_FIELDS,
+		...CONSTRUCTION_FIELDS,
 	]
 		.filter(f => f.source === 'checkbox' && typeof f.yesLeft === 'number' && typeof f.noLeft === 'number')
 		.map(f => ({
@@ -167,6 +169,7 @@ export function extractCheckboxFields(spans) {
 		...REPORTS_FIELDS,
 		...ESSENTIAL_REPAIRS_FIELDS,
 		...LOCALITY_AND_DEMAND_FIELDS,
+		...CONSTRUCTION_FIELDS,
 	]
 		.filter(f => f.source === 'checkbox' && typeof f.left === 'number' && (typeof f.yesLeft !== 'number' || typeof f.noLeft !== 'number'))
 		.map(f => ({

@@ -31,6 +31,9 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 				Math.abs(s.top - labelA.topStart) < rowEps &&
 				s.left > labelA.left;
 			if (!(betweenRows || sameRowRight)) return false;
+			// Exclude spans that are on the same row as label B (next label) to avoid capturing checkbox values
+			const sameRowAsB = Math.abs(s.top - labelB.topStart) < rowEps;
+			if (sameRowAsB) return false;
 			// Optional short window below A to avoid capturing far-off labels
 			if (betweenRows && typeof options.maxBelowA === 'number') {
 				if ((s.top - labelA.topEnd) > options.maxBelowA) return false;
@@ -142,6 +145,19 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 		if (lab.length > 0) {
 			if (txt === lab || (txt.startsWith(lab) && txt.length - lab.length < 5)) {
 				joined = '';
+			}
+		}
+	}
+
+	// Optionally strip trailing checkbox tokens (X, Yes, No, N/A) that might leak from adjacent rows
+	if (Array.isArray(options.stripTokens)) {
+		const checkboxTokens = ['X', 'Yes', 'No', 'N/A'];
+		const tokensToStrip = options.stripTokens.filter(t => checkboxTokens.includes(t));
+		if (tokensToStrip.length > 0) {
+			// Remove trailing standalone checkbox tokens
+			for (const token of tokensToStrip) {
+				const re = new RegExp('\\s+' + escapeRegex(token.trim()) + '\\s*$', 'i');
+				joined = joined.replace(re, '').trim();
 			}
 		}
 	}
