@@ -53,18 +53,11 @@ function extractSingleCheckbox(
 				)
 			);
 			labelSpan = pickWithLeftMatch || candidates[0] || null;
-			if (debug) {
-				console.log('[chk] anchor', belowAnchorLabel || belowAnchorIncludes, '=>', anchor ? { page: anchor.page, top: anchor.top } : null);
-				console.log('[chk] labelSpan (below anchor)', label, '=>', labelSpan ? { page: labelSpan.page, top: labelSpan.top } : null);
-			}
 		}
 	}
 	if (!labelSpan) {
 		labelSpan = spans.find(s => s.text === label);
 		pageForRow = labelSpan?.page;
-		if (debug) {
-			console.log('[chk] labelSpan (direct)', label, '=>', labelSpan ? { page: labelSpan.page, top: labelSpan.top } : null);
-		}
 	}
 	if (!labelSpan) return null;
 	const markers = new Set(['X', 'x', '✓', '✔', '☑', '☒', '■', '●']);
@@ -72,9 +65,6 @@ function extractSingleCheckbox(
 	// Determine the row top to test against
 	const rowTopVal = (typeof rowTop === 'number') ? rowTop : labelSpan.top;
 	const rowPage = pageForRow ?? labelSpan.page;
-	if (debug) {
-		console.log('[chk] row context', { rowPage, rowTopVal, left, topThreshold, leftThreshold });
-	}
 
 	const candidates = spans.filter(s =>
 		s.page === rowPage &&
@@ -84,10 +74,6 @@ function extractSingleCheckbox(
 		s.text.trim().length > 0
 	);
 	const hit = candidates.find(c => markers.has(String(c.text).trim()));
-	if (debug) {
-		console.log('[chk] near candidates', candidates.map(c => ({ text: c.text, left: c.left, top: c.top })));
-		console.log('[chk] near hit', !!hit);
-	}
 	if (hit) return 'X';
 
 	// Inline word detection for services-style rows: prefer explicit Yes/No typed in the box
@@ -113,10 +99,6 @@ function extractSingleCheckbox(
 		)
 		.map(s => ({ s, horiz: Math.abs(s.left - left) }))
 		.sort((a, b) => a.horiz - b.horiz);
-	if (debug) {
-		console.log('[chk] row markers', rowMarkers.slice(0, 3).map(m => ({ text: m.s.text, left: m.s.left, top: m.s.top, horiz: m.horiz })));
-		console.log('[chk] allowRowFallback?', allowRowFallback, 'fallbackMaxLeft', fallbackMaxLeft);
-	}
 	if (allowRowFallback && rowMarkers.length > 0 && rowMarkers[0].horiz <= fallbackMaxLeft) {
 		return 'X';
 	}
@@ -158,7 +140,17 @@ export function extractCheckboxFields(spans) {
 		...ESSENTIAL_REPAIRS_FIELDS,
 	]
 		.filter(f => f.source === 'checkbox' && typeof f.yesLeft === 'number' && typeof f.noLeft === 'number')
-		.map(f => ({ label: f.key, yesLeft: f.yesLeft, noLeft: f.noLeft }));
+		.map(f => ({
+			label: f.key,
+			yesLeft: f.yesLeft,
+			noLeft: f.noLeft,
+			naLeft: typeof f.naLeft === 'number' ? f.naLeft : (typeof f.noNA === 'number' ? f.noNA : undefined),
+			topThreshold: f.topThreshold,
+			belowAnchorIncludes: f.belowAnchorIncludes || (typeof f.key === 'string' && f.key.toLowerCase().includes('services separate for each unit') ? 'SERVICES' : undefined),
+			rowLabelIncludes: f.rowLabelIncludes || f.key,
+			leftWindow: f.leftWindow,
+			debug: f.debug,
+		}));
 
 	// Do NOT add synthetic Yes/No rows for SERVICES here.
 	// Services rows are typed next to the label; we handle them via single-checkbox logic with word detection.

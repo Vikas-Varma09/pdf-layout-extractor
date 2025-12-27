@@ -6,7 +6,7 @@ export const REPORTS_FIELDS = [
     { key: 'Electricity', source: 'checkbox', outputKey: 'isElectricitySupply', left: 32.25 },
 
     { key: 'Central Heating', source: 'checkbox', outputKey: 'isCentralHeating', left: 19.99 },
-
+    { key: 'If Yes, please state the type of central heating', source: 'textarea', outputKey: 'centralHeatingType', nextLabel: 'Mains drainage' },
     { key: 'Mains drainage', source: 'checkbox', outputKey: 'isMainDrainage', left: 15.79 },
     { key: 'Septic tank/Cesspit/Treatment Plant', source: 'isSepticTankPlant', outputKey: 'isUnknownWater', left: 46.2 },
     { key: 'Unknown', source: 'checkbox', outputKey: 'isUnknownDrainage', left: 16.01 },
@@ -14,4 +14,7 @@ export const REPORTS_FIELDS = [
     { key: 'Shared access', source: 'checkbox', outputKey: 'isSharedAccess', left: 32.37 },
     { key: 'Road Adopted', source: 'checkbox', outputKey: 'isRoadAdopted', left: 46.2 },
     { key: 'Any easements or rights of way', source: 'checkbox', outputKey: 'isHasEasementsOrRightsOfWay', yesLeft: 40.33, noLeft: 46.2 },
+    { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'easementsOrRightsDetails', nextLabel: 'If house split in to flats, are services separate for each unit?' },
+    { key: 'If house split in to flats, are services separate for each unit?', source: 'checkbox', outputKey: 'servicesSeparateForFlats', yesLeft: 30.74, noLeft: 39.98, noNA : 46.36, topThreshold: 2.0, leftWindow: 12.0, allowWordFallback: true },
+    { key: 'If No, please provide details', source: 'textarea', outputKey: 'servicesSeparateDetails', nextLabel: 'ENERGY EFFICIENCY' },
 ]

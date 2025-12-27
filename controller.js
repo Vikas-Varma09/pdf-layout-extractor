@@ -34,7 +34,7 @@ export async function extractFieldsController(req, res) {
 		const energyEfficiency = buildEnergyEfficiencyGroup({ spans, valueCols });
 		const essentialRepairs = buildEssentialRepairsGroup({ spans, checkbox, valueCols });
 		const localityAndDemand = buildLocalityAndDemandGroup({ spans, checkbox, valueCols });
-		const services = buildServicesGroup({ checkbox });
+		const services = buildServicesGroup({ spans, checkbox, valueCols });
 		const generalRemark = buildGeneralRemarkGroup({ spans });
 		return res.json({ propertyType, accommodation, currentOccupancy, newBuild, reports, energyEfficiency, essentialRepairs, localityAndDemand, services, generalRemark });
 	} catch (err) {

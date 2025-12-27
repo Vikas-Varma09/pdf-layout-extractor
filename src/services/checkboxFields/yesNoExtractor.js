@@ -15,7 +15,9 @@ export function extractYesNo(spans, config) {
 		rowLabelIncludes,
 		yesLeft,
 		noLeft,
+		naLeft,
 		topThreshold = 0.6,
+		leftWindow = 3.5,
 		belowAnchorIncludes,
 		allowWordFallback = false,
 		debug = false,
@@ -41,10 +43,6 @@ export function extractYesNo(spans, config) {
 				)
 				.sort((a, b) => (a.top - anchor.top) - (b.top - anchor.top));
 			labelSpan = candidates[0] || null;
-			if (debug) {
-				console.log('[yesno] anchor', belowAnchorIncludes, '=>', anchor ? { page: anchor.page, top: anchor.top } : null);
-				console.log('[yesno] label candidates', candidates.map(c => ({ page: c.page, top: c.top, text: c.text })).slice(0, 3));
-			}
 		}
 	}
 
@@ -56,60 +54,81 @@ export function extractYesNo(spans, config) {
 	if (!labelSpan) return null;
 
 	const xMarks = spans.filter(s => String(s.text).trim() === 'X');
-	if (xMarks.length === 0) return null;
 
-	const candidates = xMarks
-		.filter(x => x.page === labelSpan.page && Math.abs(x.top - labelSpan.top) < topThreshold)
-		.map(x => ({
-			x,
-			distYes: Math.abs(x.left - yesLeft),
-			distNo: Math.abs(x.left - noLeft),
-		}));
+	let candidates = xMarks.length > 0
+		? xMarks
+			.filter(x => x.page === labelSpan.page && Math.abs(x.top - labelSpan.top) < topThreshold)
+			.map(x => ({
+				x,
+				distYes: Math.abs(x.left - yesLeft),
+				distNo: Math.abs(x.left - noLeft),
+				distNa: typeof naLeft === 'number' ? Math.abs(x.left - naLeft) : Number.POSITIVE_INFINITY,
+			}))
+		: [];
+	// keep only markers close to at least one expected column
+	candidates = candidates.filter(c => Math.min(c.distYes, c.distNo, c.distNa) <= leftWindow);
+
+	// Prefer an exact nearby hit at the expected Yes/No/N/A columns if available
+	const nearYes = candidates.find(c => c.distYes <= leftWindow);
+	const nearNo = candidates.find(c => c.distNo <= leftWindow);
+	const nearNa = candidates.find(c => c.distNa <= leftWindow);
+	if (nearYes || nearNo || nearNa) {
+		let choice = null;
+		let best = null;
+		if (nearYes) best = { which: 'Yes', dist: nearYes.distYes };
+		if (nearNo && (!best || nearNo.distNo < best.dist)) best = { which: 'No', dist: nearNo.distNo };
+		if (nearNa && (!best || nearNa.distNa < best.dist)) best = { which: 'N/A', dist: nearNa.distNa };
+		if (best) return best.which;
+	}
 
 	if (candidates.length === 0) {
 		if (!allowWordFallback) return null;
 		// Word fallback: sometimes "Yes"/"No" is typed inside the box instead of an "X"
 		const isYesWord = (t) => /^yes$/i.test(String(t).trim()) || /^y$/i.test(String(t).trim());
 		const isNoWord = (t) => /^no$/i.test(String(t).trim()) || /^n$/i.test(String(t).trim());
+		const isNaWord = (t) => /^n\/?a$/i.test(String(t).trim()) || /^na$/i.test(String(t).trim());
 		const sameRow = (s) => s.page === labelSpan.page && Math.abs(s.top - labelSpan.top) < topThreshold;
 
 		const yesWords = spans
 			.filter(s => sameRow(s) && isYesWord(s.text))
 			.map(s => ({ s, dist: Math.abs(s.left - yesLeft) }))
+			.filter(w => w.dist <= leftWindow)
 			.sort((a, b) => a.dist - b.dist);
 		const noWords = spans
 			.filter(s => sameRow(s) && isNoWord(s.text))
 			.map(s => ({ s, dist: Math.abs(s.left - noLeft) }))
+			.filter(w => w.dist <= leftWindow)
 			.sort((a, b) => a.dist - b.dist);
+		const naWords = typeof naLeft === 'number'
+			? spans
+				.filter(s => sameRow(s) && isNaWord(s.text))
+				.map(s => ({ s, dist: Math.abs(s.left - naLeft) }))
+				.filter(w => w.dist <= leftWindow)
+				.sort((a, b) => a.dist - b.dist)
+			: [];
 
 		const bestYes = yesWords[0];
 		const bestNo = noWords[0];
+		const bestNa = naWords[0];
 
-		if (debug) {
-			console.log('[yesno] no X markers on row; word fallback enabled?', allowWordFallback);
-			console.log('[yesno] yesWords[0]:', bestYes ? { left: bestYes.s.left, top: bestYes.s.top, dist: bestYes.dist, text: bestYes.s.text } : null);
-			console.log('[yesno] noWords[0]:', bestNo ? { left: bestNo.s.left, top: bestNo.s.top, dist: bestNo.dist, text: bestNo.s.text } : null);
-		}
-
-		if (bestYes && (!bestNo || bestYes.dist <= bestNo.dist)) return 'Yes';
-		if (bestNo && (!bestYes || bestNo.dist < bestYes.dist)) return 'No';
+		const trio = [
+			bestYes ? { which: 'Yes', dist: bestYes.dist } : null,
+			bestNo ? { which: 'No', dist: bestNo.dist } : null,
+			bestNa ? { which: 'N/A', dist: bestNa.dist } : null,
+		].filter(Boolean).sort((a, b) => a.dist - b.dist);
+		if (trio.length > 0) return trio[0].which;
 		return null;
 	}
 
 	const best = candidates.reduce((a, b) => {
-		const aMin = Math.min(a.distYes, a.distNo);
-		const bMin = Math.min(b.distYes, b.distNo);
+		const aMin = Math.min(a.distYes, a.distNo, a.distNa);
+		const bMin = Math.min(b.distYes, b.distNo, b.distNa);
 		return aMin <= bMin ? a : b;
 	});
 
-	const choice = best.distYes <= best.distNo ? 'Yes' : 'No';
-	if (debug) {
-		console.log('[yesno] label:', label, 'rowLabelIncludes:', rowLabelIncludes);
-		console.log('[yesno] labelSpan:', { page: labelSpan.page, top: labelSpan.top });
-		console.log('[yesno] thresholds:', { topThreshold, yesLeft, noLeft });
-		console.log('[yesno] best candidate:', { left: best.x.left, top: best.x.top, distYes: best.distYes, distNo: best.distNo });
-		console.log('[yesno] choice:', choice);
-	}
+	let choice = 'Yes';
+	if (best.distNo <= best.distYes && best.distNo <= best.distNa) choice = 'No';
+	if (best.distNa <= best.distYes && best.distNa <= best.distNo) choice = 'N/A';
 	return choice;
 }
 
