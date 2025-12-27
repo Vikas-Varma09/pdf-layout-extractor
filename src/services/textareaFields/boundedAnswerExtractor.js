@@ -21,6 +21,23 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 		}
 	}
 
+	// Optionally stop extraction when encountering section headers or specific markers
+	const stopMarkers = Array.isArray(options.stopAtMarkers) ? options.stopAtMarkers : [];
+	let stopAtTop = null;
+	if (stopMarkers.length > 0) {
+		for (const marker of stopMarkers) {
+			const markerSpan = spans.find(s => 
+				s.page === labelA.page && 
+				typeof s.text === 'string' && 
+				s.text.toLowerCase().includes(String(marker).toLowerCase()) &&
+				s.top > labelA.topEnd
+			);
+			if (markerSpan && (stopAtTop === null || markerSpan.top < stopAtTop)) {
+				stopAtTop = markerSpan.top;
+			}
+		}
+	}
+
 	let filtered = spans
 		.filter(s => {
 			if (s.page !== labelA.page) return false;
@@ -31,9 +48,15 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 				Math.abs(s.top - labelA.topStart) < rowEps &&
 				s.left > labelA.left;
 			if (!(betweenRows || sameRowRight)) return false;
-			// Exclude spans that are on the same row as label B (next label) to avoid capturing checkbox values
-			const sameRowAsB = Math.abs(s.top - labelB.topStart) < rowEps;
-			if (sameRowAsB) return false;
+			// Stop extraction if we've hit a stop marker
+			if (stopAtTop !== null && s.top >= stopAtTop) return false;
+			// For side-by-side fields (includeSameRowRight), exclude spans on label B's row to avoid checkbox values
+			// Only apply this when using same-row extraction mode
+			if (options.includeSameRowRight) {
+				const sameRowAsB = Math.abs(s.top - labelB.topStart) < rowEps;
+				// Exclude spans on label B's row that are to the left of or at label B's position
+				if (sameRowAsB && s.left <= labelB.left) return false;
+			}
 			// Optional short window below A to avoid capturing far-off labels
 			if (betweenRows && typeof options.maxBelowA === 'number') {
 				if ((s.top - labelA.topEnd) > options.maxBelowA) return false;

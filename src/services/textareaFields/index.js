@@ -252,18 +252,23 @@ const TEXTAREA_FIELDS = [
 		mapKey: 'reports_otherDetails',
 		// Scope strictly to the REPORTS section to avoid collisions
 		belowLabelIncludes: 'REPORTS',
-		// Use clustering rather than a hard left band
+		// Anchor to the "Other +" checkbox that precedes this field in REPORTS section
+		anchorBeforeIncludes: 'Other +',
+		// Use clustering rather than a hard left band to allow wide text boxes
 		leftBand: null,
 		includeSameRowRight: false,
-		onlyRightOfA: true,
+		// Allow text anywhere below the label (text box might start at left edge)
+		onlyRightOfA: false,
 		rowEps: 2.0,
-		clusterThreshold: 8.0,
-		expandRightWithin: 60.0,
-		maxBelowA: 25.0,
+		clusterThreshold: 10.0,
+		expandRightWithin: 80.0,
+		maxBelowA: 20.0,
 		debug: false,
-		// If next label is on next page, allow capturing to end of page
-		allowCrossPage: false,
-		requireSamePageWithB: true,
+		// Allow cross-page: if B is on next page, capture until end of page 1
+		allowCrossPage: true,
+		requireSamePageWithB: false,
+		// Stop extraction when encountering these markers (to avoid capturing New Build section)
+		stopAtMarkers: ['NEW BUILD', 'Is this a Self-build project?', 'Is the Property New Build'],
 	},
 	// Essential Repairs: details (bounded to 'Is re-inspection required?')
 	{
@@ -488,6 +493,10 @@ export function extractTextareaFields(spans) {
 		}
 
 		if (f.requireSamePageWithB) {
+			// First, find A if not already found
+			if (!a) {
+				a = findBlock({ exact: f.label, includes: f.labelIncludes, altIncludes: f.labelAltIncludes, belowTop });
+			}
 			// Prefer finding B relative to A (same page, below A, with optional left constraints)
 			if (a) {
 				b = findBlockBelowA(a, {
@@ -498,9 +507,13 @@ export function extractTextareaFields(spans) {
 					leftMin: f.nextLabelLeftMin,
 				});
 			}
-			// Fallback: generic B finder constrained by any section anchor
-			if (!b) {
+			// Fallback: generic B finder constrained by any section anchor, but only if A was found
+			if (!b && a) {
 				b = findBlock({ exact: f.nextLabel, includes: f.nextLabelIncludes, altIncludes: f.nextLabelAltIncludes, belowTop });
+				// Ensure B is on the same page as A
+				if (b && b.page !== a.page) {
+					b = null;
+				}
 			}
 			// Do not continue if either A or B could not be reliably located
 			if (!b || !a) {
@@ -580,7 +593,8 @@ export function extractTextareaFields(spans) {
 				debug: f.debug,
 				stripLabelPrefixes: f.stripLabelPrefixes,
 				stripTokens: f.stripTokens,
-				labelAText: a?.labelText
+				labelAText: a?.labelText,
+				stopAtMarkers: f.stopAtMarkers
 			}
 		);
 		if (f.debug) {
