@@ -13,6 +13,8 @@ import { buildLocalityAndDemandGroup } from './src/services/fields/localityAndDe
 import { buildServicesGroup } from './src/services/fields/servicesFields/index.js';
 import { buildConstructionGroup } from './src/services/fields/constructionFields/index.js';
 import { extractRawTextFromOCR } from './src/services/ocrService.js';
+import { mapValuersDeclaration } from './src/services/fields/valuersDeclarationFields/mapper.js';
+import { parseHeader } from './src/services/fields/valuationReportDetailsFields/mapper.js';
 
 /**
  * POST /api/extract-fields
@@ -34,7 +36,10 @@ export async function extractFieldsController(req, res) {
 		const checkbox = extractCheckboxFields(spans);
 		const valueCols = extractValueColumns(spans);
 
-		const propertyType = buildPropertyTypeGroup({ mapped: {}, checkbox, valueCols, spans });
+		// Extract raw text using OCR service (use the copy we created)
+		const rawText = await extractRawTextFromOCR(pdfBuffer);
+
+		const propertyType = buildPropertyTypeGroup({ mapped: {}, checkbox, valueCols, spans, rawText });
 		const accommodation = buildAccommodationGroup({ spans, checkbox, valueCols });
 		const currentOccupancy = buildCurrentOccupancyGroup({ spans, checkbox, valueCols });
 		const newBuild = buildNewBuildGroup({ spans, checkbox, valueCols });
@@ -46,8 +51,11 @@ export async function extractFieldsController(req, res) {
 		const construction = buildConstructionGroup({ spans, checkbox, valueCols });
 		const generalRemark = buildGeneralRemarkGroup({ spans });
 
-		// Extract raw text using OCR service (use the copy we created)
-		const rawText = await extractRawTextFromOCR(pdfBuffer);
+		// Extract valuers declaration fields from rawText
+		const valuersDeclaration = rawText ? mapValuersDeclaration(rawText) : null;
+
+		// Extract valuation report details from rawText
+		const valuationReportDetails = rawText ? parseHeader(rawText, null) : null;
 
 		return res.json({ 
 			propertyType, 
@@ -61,6 +69,8 @@ export async function extractFieldsController(req, res) {
 			services, 
 			construction, 
 			generalRemark,
+			valuersDeclaration,
+			valuationReportDetails,
 			rawText: rawText || null
 		});
 	} catch (err) {
