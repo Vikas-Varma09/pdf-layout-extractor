@@ -5,6 +5,7 @@ export const ENERGY_EFFICIENCY_FIELDS = [
 		source: 'singleChoiceRow',
 		outputKey: 'epcRating',
 		requireMarker: true,
+		debug: false,
 		topThreshold: 1.2,
 		leftThreshold: 2.0,
 		options: [
