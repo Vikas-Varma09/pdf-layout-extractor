@@ -10,6 +10,8 @@ import { REPORTS_FIELDS as SERVICES_REPORTS_FIELDS } from '../fields/servicesFie
 import { CONSTRUCTION_FIELDS } from '../fields/constructionFields/config.js';
 import { CONDITION_OF_PROPERTY_FIELDS } from '../fields/conditionOfPropertyFields/config.js';
 import { RENTAL_INFORMATION_FIELDS } from '../fields/rentalInformationFields/config.js';
+import { VALUATION_FOR_FINANCE_PURPOSES_BTL_FIELDS } from '../fields/valuationForFinancePurposesBTLFields/config.js';
+import { VALUATION_FOR_FINANCE_PURPOSES_HPP_FIELDS } from '../fields/valuationForFinancePurposesHPPFields/config.js';
 
 function extractSingleCheckbox(
 	spans,
@@ -128,11 +130,21 @@ function extractSingleCheckbox(
  * @param {Array<{ text: string, left: number, top: number, page: number }>} spans
  * @returns {Record<string, string|null>}
  */
-export function extractCheckboxFields(spans) {
+export function extractCheckboxFields(spans, { applicationType } = {}) {
 	const propertyType = extractPropertyType(spans);
 	const statuses = extractPropertyTypeStatuses(spans);
 
 	const yesNoResults = {};
+	// NOTE: BTL vs HPP share label text but have different yes/no left coords.
+	// We must include only the relevant set based on applicationType.
+	const app = String(applicationType || '').trim().toUpperCase();
+	const valuationYesNoFields =
+		app === 'BTL'
+			? [...RENTAL_INFORMATION_FIELDS, ...VALUATION_FOR_FINANCE_PURPOSES_BTL_FIELDS]
+			: app === 'HPP'
+				? [...VALUATION_FOR_FINANCE_PURPOSES_HPP_FIELDS]
+				: [];
+
 	const yesNoConfigs = [
 		...PROPERTY_TYPE_FIELDS,
 		...CURRENT_OCCUPANCY_FIELDS,
@@ -143,7 +155,7 @@ export function extractCheckboxFields(spans) {
 		...ESSENTIAL_REPAIRS_FIELDS,
 		...CONSTRUCTION_FIELDS,
 		...CONDITION_OF_PROPERTY_FIELDS,
-		...RENTAL_INFORMATION_FIELDS,
+		...valuationYesNoFields,
 	]
 		.filter(f => f.source === 'checkbox' && typeof f.yesLeft === 'number' && typeof f.noLeft === 'number')
 		.map(f => ({
@@ -155,6 +167,8 @@ export function extractCheckboxFields(spans) {
 			belowAnchorIncludes: f.belowAnchorIncludes || (typeof f.key === 'string' && f.key.toLowerCase().includes('services separate for each unit') ? 'SERVICES' : undefined),
 			rowLabelIncludes: f.rowLabelIncludes || f.key,
 			leftWindow: f.leftWindow,
+			allowWordFallback: f.allowWordFallback,
+			rowFallbackMaxLeft: f.rowFallbackMaxLeft,
 			debug: f.debug,
 		}));
 

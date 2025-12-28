@@ -14,6 +14,8 @@ import { buildServicesGroup } from './src/services/fields/servicesFields/index.j
 import { buildConstructionGroup } from './src/services/fields/constructionFields/index.js';
 import { buildConditionOfPropertyGroup } from './src/services/fields/conditionOfPropertyFields/index.js';
 import { buildRentalInformationGroup } from './src/services/fields/rentalInformationFields/index.js';
+import { buildValuationForFinancePurposesBTLGroup } from './src/services/fields/valuationForFinancePurposesBTLFields/index.js';
+import { buildValuationForFinancePurposesHPPGroup } from './src/services/fields/valuationForFinancePurposesHPPFields/index.js';
 import { extractRawTextFromOCR } from './src/services/ocrService.js';
 import { mapValuersDeclaration } from './src/services/fields/valuersDeclarationFields/mapper.js';
 import { parseHeader } from './src/services/fields/valuationReportDetailsFields/mapper.js';
@@ -28,6 +30,26 @@ export async function extractFieldsController(req, res) {
 			return res.status(400).json({ error: 'Missing PDF file in "file" field.' });
 		}
 
+		// Helper: read form field values robustly (handles accidental spaces in keys like "applicationType ")
+		const getBodyField = (body, wantedKey) => {
+			if (!body || typeof body !== 'object') return null;
+			// direct hit first
+			if (body[wantedKey] != null) return body[wantedKey];
+			const wanted = String(wantedKey).trim().toLowerCase();
+			for (const [k, v] of Object.entries(body)) {
+				if (String(k).trim().toLowerCase() === wanted) return v;
+			}
+			return null;
+		};
+		const normalizeApplicationType = (val) => {
+			if (val == null) return null;
+			let s = String(val).trim();
+			// strip surrounding quotes if present
+			s = s.replace(/^["']+/, '').replace(/["']+$/, '').trim();
+			if (!s) return null;
+			return s.toUpperCase();
+		};
+
 		// Create a copy of the buffer for OCR (in case the original gets consumed/detached)
 		const pdfBuffer = Buffer.isBuffer(req.file.buffer) 
 			? Buffer.from(req.file.buffer) 
@@ -35,8 +57,9 @@ export async function extractFieldsController(req, res) {
 
 		// Extract structured fields
 		const spans = await extractSpansFromPdfBuffer(req.file.buffer);
-		const checkbox = extractCheckboxFields(spans);
-		const valueCols = extractValueColumns(spans);
+		const applicationType = normalizeApplicationType(getBodyField(req.body, 'applicationType'));
+		const checkbox = extractCheckboxFields(spans, { applicationType });
+		const valueCols = extractValueColumns(spans, { applicationType });
 
 		// Extract raw text using OCR service (use the copy we created)
 		const rawText = await extractRawTextFromOCR(pdfBuffer);
@@ -52,7 +75,9 @@ export async function extractFieldsController(req, res) {
 		const services = buildServicesGroup({ spans, checkbox, valueCols });
 		const construction = buildConstructionGroup({ spans, checkbox, valueCols });
 		const conditionOfProperty = buildConditionOfPropertyGroup({ spans, checkbox, valueCols });
-		const rentalInformation = buildRentalInformationGroup({ spans, checkbox, valueCols });
+		const rentalInformation = applicationType === 'BTL' ? buildRentalInformationGroup({ spans, checkbox, valueCols }) : null;
+		const valuationForFinancePurposesBTL = applicationType === 'BTL' ? buildValuationForFinancePurposesBTLGroup({ spans, checkbox, valueCols }) : null;
+		const valuationForFinancePurposesHPP = applicationType === 'HPP' ? buildValuationForFinancePurposesHPPGroup({ spans, checkbox, valueCols }) : null;
 		const generalRemark = buildGeneralRemarkGroup({ spans });
 
 		// Extract valuers declaration fields from rawText
@@ -74,6 +99,9 @@ export async function extractFieldsController(req, res) {
 			construction, 
 			conditionOfProperty,
 			rentalInformation,
+			valuationForFinancePurposesBTL,
+			valuationForFinancePurposesHPP,
+			applicationType,
 			generalRemark,
 			valuersDeclaration,
 			valuationReportDetails,

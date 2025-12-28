@@ -18,6 +18,7 @@ export function extractYesNo(spans, config) {
 		naLeft,
 		topThreshold = 0.6,
 		leftWindow = 3.5,
+		rowFallbackMaxLeft = 12.0,
 		belowAnchorIncludes,
 		allowWordFallback = false,
 		debug = false,
@@ -51,22 +52,36 @@ export function extractYesNo(spans, config) {
 		labelSpan = spans.find(s => s.text === label) ||
 			spans.find(s => rowLabelIncludes && typeof s.text === 'string' && s.text.toLowerCase().includes(String(rowLabelIncludes).toLowerCase()));
 	}
+
+	if (debug) {
+		console.log('[yesNo] label:', label);
+		console.log('[yesNo] rowLabelIncludes:', rowLabelIncludes ?? null);
+		console.log('[yesNo] belowAnchorIncludes:', belowAnchorIncludes ?? null);
+		console.log('[yesNo] matched labelSpan:', labelSpan ? { text: labelSpan.text, page: labelSpan.page, top: labelSpan.top, left: labelSpan.left } : null);
+		console.log('[yesNo] yesLeft/noLeft/naLeft:', { yesLeft, noLeft, naLeft: typeof naLeft === 'number' ? naLeft : null });
+		console.log('[yesNo] topThreshold/leftWindow:', { topThreshold, leftWindow, allowWordFallback });
+	}
 	if (!labelSpan) return null;
 
-	const xMarks = spans.filter(s => String(s.text).trim() === 'X');
+	const markers = new Set(['X', 'x', '✓', '✔', '☑', '☒', '■', '●']);
+	const markSpans = spans.filter(s => markers.has(String(s.text).trim()));
 
-	let candidates = xMarks.length > 0
-		? xMarks
-			.filter(x => x.page === labelSpan.page && Math.abs(x.top - labelSpan.top) < topThreshold)
-			.map(x => ({
-				x,
-				distYes: Math.abs(x.left - yesLeft),
-				distNo: Math.abs(x.left - noLeft),
-				distNa: typeof naLeft === 'number' ? Math.abs(x.left - naLeft) : Number.POSITIVE_INFINITY,
+	let candidates = markSpans.length > 0
+		? markSpans
+			.filter(m => m.page === labelSpan.page && Math.abs(m.top - labelSpan.top) < topThreshold)
+			.map(m => ({
+				x: m,
+				distYes: Math.abs(m.left - yesLeft),
+				distNo: Math.abs(m.left - noLeft),
+				distNa: typeof naLeft === 'number' ? Math.abs(m.left - naLeft) : Number.POSITIVE_INFINITY,
 			}))
 		: [];
 	// keep only markers close to at least one expected column
 	candidates = candidates.filter(c => Math.min(c.distYes, c.distNo, c.distNa) <= leftWindow);
+
+	if (debug) {
+		console.log('[yesNo] marker candidates near columns (sample):', candidates.slice(0, 5).map(c => ({ text: c.x.text, left: c.x.left, top: c.x.top, distYes: c.distYes, distNo: c.distNo, distNa: c.distNa })));
+	}
 
 	// Prefer an exact nearby hit at the expected Yes/No/N/A columns if available
 	const nearYes = candidates.find(c => c.distYes <= leftWindow);
@@ -79,6 +94,31 @@ export function extractYesNo(spans, config) {
 		if (nearNo && (!best || nearNo.distNo < best.dist)) best = { which: 'No', dist: nearNo.distNo };
 		if (nearNa && (!best || nearNa.distNa < best.dist)) best = { which: 'N/A', dist: nearNa.distNa };
 		if (best) return best.which;
+	}
+
+	// Row fallback: if there are markers on the same row but none within leftWindow,
+	// choose the closest marker to the expected Yes/No/N/A columns (bounded by rowFallbackMaxLeft).
+	if (candidates.length === 0) {
+		const rowMarkers = markSpans
+			.filter(m => m.page === labelSpan.page && Math.abs(m.top - labelSpan.top) < topThreshold)
+			.map(m => ({
+				m,
+				distYes: Math.abs(m.left - yesLeft),
+				distNo: Math.abs(m.left - noLeft),
+				distNa: typeof naLeft === 'number' ? Math.abs(m.left - naLeft) : Number.POSITIVE_INFINITY,
+			}))
+			.sort((a, b) => Math.min(a.distYes, a.distNo, a.distNa) - Math.min(b.distYes, b.distNo, b.distNa));
+
+		if (debug) {
+			console.log('[yesNo] row markers (sample):', rowMarkers.slice(0, 8).map(r => ({ text: r.m.text, left: r.m.left, top: r.m.top, distYes: r.distYes, distNo: r.distNo, distNa: r.distNa })));
+		}
+
+		const bestRow = rowMarkers[0];
+		if (bestRow && Math.min(bestRow.distYes, bestRow.distNo, bestRow.distNa) <= rowFallbackMaxLeft) {
+			if (bestRow.distNo <= bestRow.distYes && bestRow.distNo <= bestRow.distNa) return 'No';
+			if (bestRow.distNa <= bestRow.distYes && bestRow.distNa <= bestRow.distNo) return 'N/A';
+			return 'Yes';
+		}
 	}
 
 	if (candidates.length === 0) {

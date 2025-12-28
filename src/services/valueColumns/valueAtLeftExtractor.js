@@ -14,6 +14,8 @@ export function extractValueAtLeft(spans, config) {
 		labelAltIncludes,
 		debug = false,
 		targetLeft,
+		rowRightFallback = false,
+		rowRightWithin = 60.0,
 		topThreshold = 0.6,
 		leftThreshold = 2.0,
 		// Combine digits: either gather within a window or use explicit additional lefts
@@ -45,6 +47,7 @@ export function extractValueAtLeft(spans, config) {
 		console.log('[valueCols] labelAltIncludes:', labelAltIncludes ?? null);
 		console.log('[valueCols] matched labelSpan:', labelSpan ? { text: labelSpan.text, page: labelSpan.page, top: labelSpan.top, left: labelSpan.left } : null);
 		console.log('[valueCols] targetLeft:', targetLeft, 'topThreshold:', topThreshold, 'leftThreshold:', leftThreshold);
+		console.log('[valueCols] rowRightFallback:', rowRightFallback, 'rowRightWithin:', rowRightWithin);
 	}
 	if (!labelSpan) return null;
 
@@ -172,6 +175,24 @@ export function extractValueAtLeft(spans, config) {
 
 	if (debug) {
 		console.log('[valueCols] no candidates found');
+	}
+
+	// Last fallback (opt-in): pick the right-most numeric token on the same row to the right of the label.
+	// Useful for boxes where targetLeft differs between templates (e.g., HPP vs BTL).
+	if (rowRightFallback) {
+		const rowRightCandidates = spans
+			.filter(s =>
+				s.page === labelSpan.page &&
+				Math.abs(s.top - labelSpan.top) <= topThreshold &&
+				s.left > labelSpan.left &&
+				s.left <= (labelSpan.left + rowRightWithin) &&
+				isNumericText(String(s.text).trim())
+			)
+			.sort((a, b) => b.left - a.left);
+		if (debug) {
+			console.log('[valueCols] rowRightCandidates (sample):', rowRightCandidates.slice(0, 8).map(s => ({ text: s.text, left: s.left, top: s.top })));
+		}
+		if (rowRightCandidates.length > 0) return String(rowRightCandidates[0].text).trim();
 	}
 
 	return null;
