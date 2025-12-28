@@ -185,6 +185,22 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 		}
 	}
 
+	// Strip checkbox tokens from anywhere in the text (not just trailing)
+	const checkboxTokens = ['X', 'Yes', 'No', 'N/A'];
+	for (const token of checkboxTokens) {
+		// Remove standalone checkbox tokens (with word boundaries)
+		const re = new RegExp('\\b' + escapeRegex(token.trim()) + '\\b', 'gi');
+		joined = joined.replace(re, '').trim();
+	}
+	// Clean up multiple spaces
+	joined = joined.replace(/\s+/g, ' ').trim();
+
+	// Reject if the result only contains checkbox tokens or is empty
+	const checkboxOnlyPattern = /^(Yes|No|X|N\/A|\s)+$/i;
+	if (checkboxOnlyPattern.test(joined) || joined.length === 0) {
+		return null;
+	}
+
 	if (options.debug) {
 		console.log('[textarea] joined:', joined);
 	}

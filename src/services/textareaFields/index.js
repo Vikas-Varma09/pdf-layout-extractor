@@ -269,6 +269,9 @@ const TEXTAREA_FIELDS = [
 		requireSamePageWithB: false,
 		// Stop extraction when encountering these markers (to avoid capturing New Build section)
 		stopAtMarkers: ['NEW BUILD', 'Is this a Self-build project?', 'Is the Property New Build'],
+		// Strip checkbox tokens to avoid capturing "Yes No" from nearby checkboxes
+		stripTokens: ['Yes', 'No', 'X', 'N/A'],
+		stripLabelPrefixes: true,
 	},
 	// Essential Repairs: details (bounded to 'Is re-inspection required?')
 	{
