@@ -62,6 +62,9 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 				if ((s.top - labelA.topEnd) > options.maxBelowA) return false;
 			}
 			if (typeof s.text !== 'string' || s.text.trim().length === 0) return false;
+			// Optional absolute left bounds for answers (useful when the textbox is in a different column than the label)
+			if (typeof options.answerLeftMin === 'number' && s.left < options.answerLeftMin) return false;
+			if (typeof options.answerLeftMax === 'number' && s.left > options.answerLeftMax) return false;
 			// Optionally require tokens to be on or to the right of label A
 			if (options.onlyRightOfA === true) {
 				const rightSlack = typeof options.rightSlack === 'number' ? options.rightSlack : 0.0;

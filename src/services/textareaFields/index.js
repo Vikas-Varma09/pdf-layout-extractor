@@ -1,6 +1,9 @@
 import { buildLabelBlocks } from './labelBlockBuilder.js';
 import { extractBoundedAnswer } from './boundedAnswerExtractor.js';
 
+// Cache textarea extraction per spans array (many group builders call extractTextareaFields with the same spans)
+const TEXTAREA_CACHE = new WeakMap();
+
 // Define textarea fields and their next label (Label B)
 const TEXTAREA_FIELDS = [
 	{
@@ -57,6 +60,162 @@ const TEXTAREA_FIELDS = [
 		requireSamePageWithB: true,
 		stripLabelPrefixes: true,
 		stripTokens: ['If No, please provide details'],
+	},
+	// Condition of Property: structural movement details (No path)
+	{
+		label: 'If No, please provide details',
+		labelIncludes: 'If No, please provide details',
+		nextLabel: 'Have any structural modifications been effected to',
+		nextLabelIncludes: 'Have any structural modifications been effected to',
+		nextLabelAltIncludes: 'be aware?',
+		mapKey: 'conditionOfProperty_structuralMovementDetails',
+		// Scope to CONDITION OF PROPERTY and anchor to the structural movement question
+		belowLabelIncludes: 'CONDITION OF PROPERTY',
+		anchorBeforeIncludes: 'historic or non progressive',
+		// This textbox content can sit in the right column (e.g. span left ~53.92%)
+		// Use absolute answer-left bounds instead of a tight leftBand around the label.
+		answerLeftMin: 35.0,
+		answerLeftMax: 95.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		// Allow a bit more vertical room for this textbox
+		maxBelowA: 25.0,
+		requireSamePageWithB: true,
+		// If B can't be reliably found below A, still capture (bounded by maxBelowA/stopAtMarkers)
+		allowBMissing: true,
+		stopAtMarkers: [
+			'Have any structural modifications been effected to',
+			'be aware?',
+			// If the next label isn't found reliably, stop before the next section header
+			'ENERGY EFFICIENCY',
+		],
+		stripLabelPrefixes: true,
+		stripTokens: ['If No, please provide details'],
+		debug: false,
+	},
+	// Condition of Property: structural modifications details (Yes path)
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		nextLabel: 'If internal or external communal areas exist have they',
+		nextLabelIncludes: 'If internal or external communal areas exist have they',
+		nextLabelAltIncludes: 'been maintained to a satisfactory standard',
+		mapKey: 'conditionOfProperty_structuralModificationsDetails',
+		belowLabelIncludes: 'CONDITION OF PROPERTY',
+		anchorBeforeIncludes: 'Have any structural modifications',
+		// Right-column textbox (example left ~54.52%)
+		answerLeftMin: 35.0,
+		answerLeftMax: 95.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		maxBelowA: 25.0,
+		requireSamePageWithB: true,
+		allowBMissing: true,
+		stopAtMarkers: [
+			'If internal or external communal areas exist have they',
+			'been maintained to a satisfactory standard',
+			'ENERGY EFFICIENCY',
+		],
+		stripLabelPrefixes: true,
+		stripTokens: ['If Yes, please provide details'],
+		debug: false,
+	},
+	// Condition of Property: Flooding/Subsidence/Heave/Landslip details textarea
+	{
+		label: 'Please provide details:',
+		labelIncludes: 'Please provide details',
+		nextLabel: 'Are the plot boundaries well defined and the total',
+		nextLabelIncludes: 'Are the plot boundaries well defined',
+		nextLabelAltIncludes: 'below 0.4 hectares',
+		mapKey: 'conditionOfProperty_details',
+		belowLabelIncludes: 'CONDITION OF PROPERTY',
+		anchorBeforeIncludes: 'Landslip',
+		// Right-column textbox (example left ~55.1%)
+		answerLeftMin: 35.0,
+		answerLeftMax: 95.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		maxBelowA: 30.0,
+		requireSamePageWithB: true,
+		allowBMissing: true,
+		stopAtMarkers: [
+			'Are the plot boundaries well defined',
+			'below 0.4 hectares',
+			'ENERGY EFFICIENCY',
+		],
+		stripLabelPrefixes: true,
+		stripTokens: ['Please provide details:'],
+		debug: false,
+	},
+	// Condition of Property: trees influence details (Yes path)
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		nextLabel: 'Is the property built on a steeply sloping site?',
+		nextLabelIncludes: 'steeply sloping site',
+		mapKey: 'conditionOfProperty_treesInfluenceDetails',
+		belowLabelIncludes: 'CONDITION OF PROPERTY',
+		anchorBeforeIncludes: 'trees within',
+		// Right-column textbox (example left ~53.76%)
+		answerLeftMin: 35.0,
+		answerLeftMax: 95.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		maxBelowA: 25.0,
+		requireSamePageWithB: true,
+		allowBMissing: true,
+		stopAtMarkers: [
+			'steeply sloping site',
+			'REPORTS',
+		],
+		stripLabelPrefixes: true,
+		stripTokens: ['If Yes, please provide details'],
+		debug: false,
+	},
+	// Condition of Property: steep slope details (Yes path)
+	{
+		label: 'If Yes, please provide details',
+		labelIncludes: 'If Yes, please provide details',
+		nextLabel: 'REPORTS',
+		nextLabelIncludes: 'REPORTS',
+		mapKey: 'conditionOfProperty_steepSlopeDetails',
+		belowLabelIncludes: 'CONDITION OF PROPERTY',
+		anchorBeforeIncludes: 'steeply sloping site',
+		// Right-column textbox (example left ~54.26%)
+		answerLeftMin: 35.0,
+		answerLeftMax: 95.0,
+		includeSameRowRight: false,
+		onlyRightOfA: true,
+		rightSlack: 0.5,
+		rowEps: 2.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
+		maxBelowA: 25.0,
+		requireSamePageWithB: true,
+		allowBMissing: true,
+		stopAtMarkers: [
+			'REPORTS',
+			'ENERGY EFFICIENCY',
+		],
+		stripLabelPrefixes: true,
+		stripTokens: ['If Yes, please provide details'],
+		debug: false,
 	},
 	{
 		label: '(please provide details)',
@@ -419,6 +578,11 @@ const TEXTAREA_FIELDS = [
  * @returns {Record<string, string|null>}
  */
 export function extractTextareaFields(spans) {
+	// Return cached result to avoid repeated work/logs for the same request
+	if (Array.isArray(spans) && TEXTAREA_CACHE.has(spans)) {
+		return TEXTAREA_CACHE.get(spans);
+	}
+
 	const out = {};
 	if (!Array.isArray(spans) || spans.length === 0) {
 		for (const f of TEXTAREA_FIELDS) out[f.label] = null;
@@ -461,6 +625,25 @@ export function extractTextareaFields(spans) {
 			return null;
 		};
 
+		// When multiple identical labels exist (common for "If Yes/No, please provide details"),
+		// pick the *nearest* one below the anchor on the same page.
+		const findNearestBlockBelow = ({ exact, includes, altIncludes, belowTop, samePageAs }) => {
+			const candidates = blocks.filter(b => {
+				if (typeof belowTop === 'number' && !(b.topStart > belowTop)) return false;
+				if (samePageAs !== undefined && b.page !== samePageAs) return false;
+				if (exact && b.labelText === exact) return true;
+				const t = String(b.labelText ?? '').toLowerCase();
+				if (includes && t.includes(String(includes).toLowerCase())) return true;
+				if (altIncludes && t.includes(String(altIncludes).toLowerCase())) return true;
+				return false;
+			});
+			if (candidates.length === 0) return null;
+			if (typeof belowTop === 'number') {
+				return candidates.sort((b1, b2) => (b1.topStart - belowTop) - (b2.topStart - belowTop))[0];
+			}
+			return candidates.sort((b1, b2) => b1.topStart - b2.topStart)[0];
+		};
+
 		// Optional anchor to force matching below a specific section label
 		let belowTop = undefined;
 		if (f.belowLabel || f.belowLabelIncludes) {
@@ -481,7 +664,7 @@ export function extractTextareaFields(spans) {
 		if (f.anchorBeforeIncludes) {
 			const before = findBlock({ includes: f.anchorBeforeIncludes, belowTop });
 			if (before) {
-				a = findBlock({
+				a = findNearestBlockBelow({
 					exact: f.label,
 					includes: f.labelIncludes,
 					altIncludes: f.labelAltIncludes,
@@ -518,10 +701,18 @@ export function extractTextareaFields(spans) {
 					b = null;
 				}
 			}
+			// Guard: never allow B above (or overlapping) A, otherwise extraction range becomes invalid.
+			if (a && b && b.page === a.page && b.topStart <= a.topEnd) {
+				b = null;
+			}
 			// Do not continue if either A or B could not be reliably located
-			if (!b || !a) {
+			if ((!b && !f.allowBMissing) || !a) {
 				out[f.label] = null;
 				continue;
+			}
+			// Optional: if B is missing/unreliable, allow capture until end-of-page (bounded by maxBelowA / stopAtMarkers)
+			if (!b && f.allowBMissing) {
+				b = { ...a, topStart: Number.POSITIVE_INFINITY, topEnd: Number.POSITIVE_INFINITY };
 			}
 		} else {
 			if (!a) {
@@ -572,7 +763,7 @@ export function extractTextareaFields(spans) {
 		if (f.debug) {
 			console.log('[textarea] A block for', f.label, a ? { page: a.page, left: a.left, topStart: a.topStart, topEnd: a.topEnd } : null);
 			console.log('[textarea] B block for', f.nextLabel || f.nextLabelIncludes, b ? { page: b.page, left: b.left, topStart: b.topStart, topEnd: b.topEnd } : null);
-			console.log('[textarea] options', { leftBand: f.leftBand, clusterThreshold: f.clusterThreshold, expandRightWithin: f.expandRightWithin, includeSameRowRight: f.includeSameRowRight, rowEps: f.rowEps, onlyRightOfA: f.onlyRightOfA, rightSlack: f.rightSlack });
+			console.log('[textarea] options', { leftBand: f.leftBand, answerLeftMin: f.answerLeftMin, answerLeftMax: f.answerLeftMax, clusterThreshold: f.clusterThreshold, expandRightWithin: f.expandRightWithin, includeSameRowRight: f.includeSameRowRight, rowEps: f.rowEps, onlyRightOfA: f.onlyRightOfA, rightSlack: f.rightSlack });
 		}
 
 		if (!a || !b) {
@@ -585,6 +776,8 @@ export function extractTextareaFields(spans) {
 			spans,
 			{
 				leftBand: f.leftBand,
+				answerLeftMin: f.answerLeftMin,
+				answerLeftMax: f.answerLeftMax,
 				clusterThreshold: f.clusterThreshold,
 				expandRightWithin: f.expandRightWithin,
 				includeSameRowRight: f.includeSameRowRight,
@@ -607,6 +800,10 @@ export function extractTextareaFields(spans) {
 		out[keyName] = value ?? null;
 	}
 
+	// Memoize for this spans array (per request)
+	if (Array.isArray(spans)) {
+		TEXTAREA_CACHE.set(spans, out);
+	}
 	return out;
 }
 

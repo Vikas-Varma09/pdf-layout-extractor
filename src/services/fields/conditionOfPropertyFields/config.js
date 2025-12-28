@@ -1,13 +1,18 @@
 export const CONDITION_OF_PROPERTY_FIELDS = [
     { key: 'movement to the property?', source: 'checkbox', outputKey: 'isStructuralMovement', yesLeft: 86.82, noLeft: 92.9 },
     { key: 'If Yes, is this historic or non progressive?', source: 'checkbox', outputKey: 'isStructuralMovementHistoricOrNonProgressive', yesLeft: 86.82, noLeft: 92.9 },
+    { key: 'If No, please provide details', source: 'textarea', outputKey: 'structuralMovementDetails', nextLabel: 'Have any structural modifications been effected to', textareaMapKey: 'conditionOfProperty_structuralMovementDetails' },
     { key: 'be aware?', source: 'checkbox', outputKey: 'isStructuralModifications', yesLeft: 86.82, noLeft: 92.9 },
+    { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'structuralModificationsDetails', nextLabel: 'If internal or external communal areas exist have they', textareaMapKey: 'conditionOfProperty_structuralModificationsDetails' },
     { key: 'been maintained to a satisfactory standard', source: 'checkbox', outputKey: 'communalAreasMaintained', yesLeft: 86.82, noLeft: 92.9 },
     { key: 'Flooding', source: 'checkbox', outputKey: 'flooding', left: 58.96 },
     { key: 'Subsidence', source: 'checkbox', outputKey: 'subsidence', left: 70.23 },
     { key: 'Heave', source: 'checkbox', outputKey: 'heave', left: 81.67 },
     { key: 'Landslip', source: 'checkbox', outputKey: 'landslip', left: 93.21 },
+    { key: 'Please provide details:', source: 'textarea', outputKey: 'details', nextLabel: 'Are the plot boundaries well defined and the total', textareaMapKey: 'conditionOfProperty_details' },
     { key: 'below 0.4 hectares? (1 acre)', source: 'checkbox', outputKey: 'isPlotBoundariesDefinedUnderPointFourHectares', yesLeft: 86.82, noLeft: 92.9 },
     { key: 'of the property?', source: 'checkbox', outputKey: 'isTreesWithinInfluencingDistance', yesLeft: 86.82, noLeft: 92.9 },
+    { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'treesInfluenceDetails', nextLabel: 'Is the property built on a steeply sloping site?', textareaMapKey: 'conditionOfProperty_treesInfluenceDetails' },
     { key: 'Is the property built on a steeply sloping site?', source: 'checkbox', outputKey: 'isBuiltOnSteepSlope', yesLeft: 86.82, noLeft: 92.9 },
+    { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'steepSlopeDetails', nextLabel: 'REPORTS', textareaMapKey: 'conditionOfProperty_steepSlopeDetails' },
 ]
