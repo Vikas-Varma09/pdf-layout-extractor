@@ -6,7 +6,8 @@ export const LOCALITY_AND_DEMAND_FIELDS = [
     { key: 'Average', source: 'checkbox', outputKey: 'isAverageMarketAppeal', left: 33.26 },
     { key: 'Poor', source: 'checkbox', outputKey: 'isPoorMarketAppeal', left: 46.44 },
     { key: 'Residential', source: 'checkbox', outputKey: 'isOwnerResidential', left: 13.44 },
-    { key: 'Let', source: 'checkbox', outputKey: 'isResidentialLet', left: 32.93 },
+    // Sometimes the "Let" marker is slightly offset; allow a safe row fallback so the X is still picked
+    { key: 'Let', source: 'checkbox', outputKey: 'isResidentialLet', left: 32.93, leftThreshold: 3.5, topThreshold: 1.2, allowRowFallback: true, fallbackMaxLeft: 4.5 },
     { key: 'Commercial', source: 'checkbox', outputKey: 'isCommercial', left: 46.63, leftThreshold: 2.5, topThreshold: 1.0 },
 //Are property prices in the area: 
     { key: 'Rising', source: 'checkbox', outputKey: 'isPricesRising', left: 20.49, checkboxMapKey: 'prices_Rising', belowAnchorIncludes: 'Are property prices in the area', leftThreshold: 3.5, topThreshold: 1.5, allowRowFallback: false },
