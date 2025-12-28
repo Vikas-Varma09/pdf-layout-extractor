@@ -21,6 +21,7 @@ export function extractYesNo(spans, config) {
 		rowFallbackMaxLeft = 12.0,
 		belowAnchorIncludes,
 		allowWordFallback = false,
+		allowNaWordFallback = true,
 		debug = false,
 	} = config;
 	if (!Array.isArray(spans) || spans.length === 0) return null;
@@ -59,7 +60,7 @@ export function extractYesNo(spans, config) {
 		console.log('[yesNo] belowAnchorIncludes:', belowAnchorIncludes ?? null);
 		console.log('[yesNo] matched labelSpan:', labelSpan ? { text: labelSpan.text, page: labelSpan.page, top: labelSpan.top, left: labelSpan.left } : null);
 		console.log('[yesNo] yesLeft/noLeft/naLeft:', { yesLeft, noLeft, naLeft: typeof naLeft === 'number' ? naLeft : null });
-		console.log('[yesNo] topThreshold/leftWindow:', { topThreshold, leftWindow, allowWordFallback });
+		console.log('[yesNo] topThreshold/leftWindow:', { topThreshold, leftWindow, allowWordFallback, allowNaWordFallback });
 	}
 	if (!labelSpan) return null;
 
@@ -139,7 +140,7 @@ export function extractYesNo(spans, config) {
 			.map(s => ({ s, dist: Math.abs(s.left - noLeft) }))
 			.filter(w => w.dist <= leftWindow)
 			.sort((a, b) => a.dist - b.dist);
-		const naWords = typeof naLeft === 'number'
+		const naWords = (allowNaWordFallback && typeof naLeft === 'number')
 			? spans
 				.filter(s => sameRow(s) && isNaWord(s.text))
 				.map(s => ({ s, dist: Math.abs(s.left - naLeft) }))

@@ -15,6 +15,8 @@ export const REPORTS_FIELDS = [
     { key: 'Road Adopted', source: 'checkbox', outputKey: 'isRoadAdopted', left: 46.2 },
     { key: 'Any easements or rights of way', source: 'checkbox', outputKey: 'isHasEasementsOrRightsOfWay', yesLeft: 40.33, noLeft: 46.2 },
     { key: 'If Yes, please provide details', source: 'textarea', outputKey: 'easementsOrRightsDetails', nextLabel: 'If house split in to flats, are services separate for each unit?' },
-    { key: 'If house split in to flats, are services separate for each unit?', source: 'checkbox', outputKey: 'servicesSeparateForFlats', yesLeft: 30.74, noLeft: 39.98, noNA : 46.36, topThreshold: 2.0, leftWindow: 12.0, allowWordFallback: true },
+    // NOTE: disable word fallback here because the template prints "Yes / No / N/A" headers on the row,
+    // which can be incorrectly interpreted as an answer when all boxes are empty.
+    { key: 'If house split in to flats, are services separate for each unit?', source: 'checkbox', outputKey: 'servicesSeparateForFlats', yesLeft: 30.74, noLeft: 39.98, noNA : 46.36, topThreshold: 2.0, leftWindow: 12.0, allowWordFallback: false, allowNaWordFallback: false, debug: false },
     { key: 'If No, please provide details', source: 'textarea', outputKey: 'servicesSeparateDetails', nextLabel: 'ENERGY EFFICIENCY' },
 ]

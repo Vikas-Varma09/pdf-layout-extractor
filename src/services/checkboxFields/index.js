@@ -168,6 +168,7 @@ export function extractCheckboxFields(spans, { applicationType } = {}) {
 			rowLabelIncludes: f.rowLabelIncludes || f.key,
 			leftWindow: f.leftWindow,
 			allowWordFallback: f.allowWordFallback,
+			allowNaWordFallback: f.allowNaWordFallback,
 			rowFallbackMaxLeft: f.rowFallbackMaxLeft,
 			debug: f.debug,
 		}));
