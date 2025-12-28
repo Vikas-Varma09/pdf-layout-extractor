@@ -1,7 +1,9 @@
 import { VALUATION_FOR_FINANCE_PURPOSES_HPP_FIELDS } from './config.js';
+import { extractTextareaFields } from '../../textareaFields/index.js';
 
 export function buildValuationForFinancePurposesHPPGroup({ spans, checkbox, valueCols }) {
 	const out = {};
+	let textareaMap = null;
 	for (const item of VALUATION_FOR_FINANCE_PURPOSES_HPP_FIELDS) {
 		const outputKey = item.outputKey || item.key;
 		const sourceKey = item.key;
@@ -10,6 +12,10 @@ export function buildValuationForFinancePurposesHPPGroup({ spans, checkbox, valu
 			value = checkbox?.[sourceKey] ?? null;
 		} else if (item.source === 'valueCols') {
 			value = valueCols?.[sourceKey] ?? null;
+		} else if (item.source === 'textarea') {
+			if (!textareaMap) textareaMap = extractTextareaFields(spans);
+			const textareaKey = item.textareaMapKey || sourceKey;
+			value = textareaMap?.[textareaKey] ?? null;
 		}
 		out[outputKey] = value ?? null;
 	}

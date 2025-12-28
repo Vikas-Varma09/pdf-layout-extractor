@@ -176,31 +176,39 @@ export function extractBoundedAnswer(bounds, spans, options = {}) {
 	}
 
 	// Optionally strip trailing checkbox tokens (X, Yes, No, N/A) that might leak from adjacent rows
-	if (Array.isArray(options.stripTokens)) {
-		const checkboxTokens = ['X', 'Yes', 'No', 'N/A'];
-		const tokensToStrip = options.stripTokens.filter(t => checkboxTokens.includes(t));
-		if (tokensToStrip.length > 0) {
-			// Remove trailing standalone checkbox tokens
-			for (const token of tokensToStrip) {
-				const re = new RegExp('\\s+' + escapeRegex(token.trim()) + '\\s*$', 'i');
-				joined = joined.replace(re, '').trim();
+	const stripCheckboxTokens = options.stripCheckboxTokens !== false;
+	if (stripCheckboxTokens) {
+		if (Array.isArray(options.stripTokens)) {
+			const checkboxTokens = ['X', 'Yes', 'No', 'N/A'];
+			const tokensToStrip = options.stripTokens.filter(t => checkboxTokens.includes(t));
+			if (tokensToStrip.length > 0) {
+				// Remove trailing standalone checkbox tokens
+				for (const token of tokensToStrip) {
+					const re = new RegExp('\\s+' + escapeRegex(token.trim()) + '\\s*$', 'i');
+					joined = joined.replace(re, '').trim();
+				}
 			}
+		}
+
+		// Strip checkbox tokens from anywhere in the text (not just trailing)
+		const checkboxTokens = ['X', 'Yes', 'No', 'N/A'];
+		for (const token of checkboxTokens) {
+			// Remove standalone checkbox tokens (with word boundaries)
+			const re = new RegExp('\\b' + escapeRegex(token.trim()) + '\\b', 'gi');
+			joined = joined.replace(re, '').trim();
 		}
 	}
 
-	// Strip checkbox tokens from anywhere in the text (not just trailing)
-	const checkboxTokens = ['X', 'Yes', 'No', 'N/A'];
-	for (const token of checkboxTokens) {
-		// Remove standalone checkbox tokens (with word boundaries)
-		const re = new RegExp('\\b' + escapeRegex(token.trim()) + '\\b', 'gi');
-		joined = joined.replace(re, '').trim();
-	}
 	// Clean up multiple spaces
 	joined = joined.replace(/\s+/g, ' ').trim();
 
-	// Reject if the result only contains checkbox tokens or is empty
-	const checkboxOnlyPattern = /^(Yes|No|X|N\/A|\s)+$/i;
-	if (checkboxOnlyPattern.test(joined) || joined.length === 0) {
+	// Reject if the result only contains checkbox tokens (when stripping is enabled) or is empty
+	if (stripCheckboxTokens) {
+		const checkboxOnlyPattern = /^(Yes|No|X|N\/A|\s)+$/i;
+		if (checkboxOnlyPattern.test(joined) || joined.length === 0) {
+			return null;
+		}
+	} else if (joined.length === 0) {
 		return null;
 	}
 
