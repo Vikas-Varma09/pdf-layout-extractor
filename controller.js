@@ -3,7 +3,6 @@ import { extractCheckboxFields } from './src/services/checkboxFields/index.js';
 import { extractValueColumns } from './src/services/valueColumns/index.js';
 import { buildPropertyTypeGroup } from './src/services/fields/propertyTypeFields/index.js';
 import { buildAccommodationGroup } from './src/services/fields/accommodationFields/index.js';
-import { buildGeneralRemarkGroup } from './src/services/fields/generalRemark/index.js';
 import { buildCurrentOccupancyGroup } from './src/services/fields/currentOccupancyFields/index.js';
 import { buildNewBuildGroup } from './src/services/fields/newBuild/index.js';
 import { buildReportsGroup } from './src/services/fields/reportsFields/index.js';
@@ -19,6 +18,7 @@ import { buildValuationForFinancePurposesHPPGroup } from './src/services/fields/
 import { extractRawTextFromOCR } from './src/services/ocrService.js';
 import { mapValuersDeclaration } from './src/services/fields/valuersDeclarationFields/mapper.js';
 import { parseHeader } from './src/services/fields/valuationReportDetailsFields/mapper.js';
+import { mapGeneralRemarks } from './src/services/fields/generalRemark/mapper.js';
 
 /**
  * POST /api/extract-fields
@@ -78,7 +78,7 @@ export async function extractFieldsController(req, res) {
 		const rentalInformation = applicationType === 'BTL' ? buildRentalInformationGroup({ spans, checkbox, valueCols }) : null;
 		const valuationForFinancePurposesBTL = applicationType === 'BTL' ? buildValuationForFinancePurposesBTLGroup({ spans, checkbox, valueCols }) : null;
 		const valuationForFinancePurposesHPP = applicationType === 'HPP' ? buildValuationForFinancePurposesHPPGroup({ spans, checkbox, valueCols }) : null;
-		const generalRemark = buildGeneralRemarkGroup({ spans });
+		const generalRemark = { generalRemark: rawText ? mapGeneralRemarks(rawText) : null };
 
 		// Extract valuers declaration fields from rawText
 		const valuersDeclaration = rawText ? mapValuersDeclaration(rawText) : null;
