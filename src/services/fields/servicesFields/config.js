@@ -8,7 +8,7 @@ export const REPORTS_FIELDS = [
     { key: 'Central Heating', source: 'checkbox', outputKey: 'isCentralHeating', left: 19.99 },
     { key: 'If Yes, please state the type of central heating', source: 'textarea', outputKey: 'centralHeatingType', nextLabel: 'Mains drainage' },
     { key: 'Mains drainage', source: 'checkbox', outputKey: 'isMainDrainage', left: 15.79 },
-    { key: 'Septic tank/Cesspit/Treatment Plant', source: 'isSepticTankPlant', outputKey: 'isUnknownWater', left: 46.2 },
+    { key: 'Septic tank/Cesspit/Treatment Plant', source: 'checkbox', outputKey: 'isSepticTankPlant', left: 46.2 },
     { key: 'Unknown', source: 'checkbox', outputKey: 'isUnknownDrainage', left: 16.01 },
     { key: 'Solar panels', source: 'checkbox', outputKey: 'isSolarPanels', left: 15.72 },
     { key: 'Shared access', source: 'checkbox', outputKey: 'isSharedAccess', left: 32.37 },
