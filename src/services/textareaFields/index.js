@@ -586,6 +586,9 @@ const TEXTAREA_FIELDS = [
 		// Remove label text if it appears; if nothing else remains -> null
 		stripLabelPrefixes: true,
 		stripTokens: ['If Yes, please provide details', 'Including total value of incentives & if part exchange'],
+		// This field can legitimately start with "No ..." as part of the answer.
+		// Do not strip Yes/No tokens globally for this one.
+		stripCheckboxTokens: false,
 		rejectIfLabel: true,
 	},
 	// New Build: developer name (bounded to long 'Gatehouse Bank plc is authorised...' notice)
