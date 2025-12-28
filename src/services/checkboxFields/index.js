@@ -9,6 +9,7 @@ import { LOCALITY_AND_DEMAND_FIELDS } from '../fields/localityAndDemandFields/co
 import { REPORTS_FIELDS as SERVICES_REPORTS_FIELDS } from '../fields/servicesFields/config.js';
 import { CONSTRUCTION_FIELDS } from '../fields/constructionFields/config.js';
 import { CONDITION_OF_PROPERTY_FIELDS } from '../fields/conditionOfPropertyFields/config.js';
+import { RENTAL_INFORMATION_FIELDS } from '../fields/rentalInformationFields/config.js';
 
 function extractSingleCheckbox(
 	spans,
@@ -142,6 +143,7 @@ export function extractCheckboxFields(spans) {
 		...ESSENTIAL_REPAIRS_FIELDS,
 		...CONSTRUCTION_FIELDS,
 		...CONDITION_OF_PROPERTY_FIELDS,
+		...RENTAL_INFORMATION_FIELDS,
 	]
 		.filter(f => f.source === 'checkbox' && typeof f.yesLeft === 'number' && typeof f.noLeft === 'number')
 		.map(f => ({

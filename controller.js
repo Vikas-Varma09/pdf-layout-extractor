@@ -13,6 +13,7 @@ import { buildLocalityAndDemandGroup } from './src/services/fields/localityAndDe
 import { buildServicesGroup } from './src/services/fields/servicesFields/index.js';
 import { buildConstructionGroup } from './src/services/fields/constructionFields/index.js';
 import { buildConditionOfPropertyGroup } from './src/services/fields/conditionOfPropertyFields/index.js';
+import { buildRentalInformationGroup } from './src/services/fields/rentalInformationFields/index.js';
 import { extractRawTextFromOCR } from './src/services/ocrService.js';
 import { mapValuersDeclaration } from './src/services/fields/valuersDeclarationFields/mapper.js';
 import { parseHeader } from './src/services/fields/valuationReportDetailsFields/mapper.js';
@@ -51,6 +52,7 @@ export async function extractFieldsController(req, res) {
 		const services = buildServicesGroup({ spans, checkbox, valueCols });
 		const construction = buildConstructionGroup({ spans, checkbox, valueCols });
 		const conditionOfProperty = buildConditionOfPropertyGroup({ spans, checkbox, valueCols });
+		const rentalInformation = buildRentalInformationGroup({ spans, checkbox, valueCols });
 		const generalRemark = buildGeneralRemarkGroup({ spans });
 
 		// Extract valuers declaration fields from rawText
@@ -71,6 +73,7 @@ export async function extractFieldsController(req, res) {
 			services, 
 			construction, 
 			conditionOfProperty,
+			rentalInformation,
 			generalRemark,
 			valuersDeclaration,
 			valuationReportDetails,

@@ -5,6 +5,7 @@ import { CURRENT_OCCUPANCY_FIELDS } from '../fields/currentOccupancyFields/confi
 import { NEW_BUILD_FIELDS } from '../fields/newBuild/config.js';
 import { ENERGY_EFFICIENCY_FIELDS } from '../fields/energyEfficiencyFields/config.js';
 import { CONSTRUCTION_FIELDS } from '../fields/constructionFields/config.js';
+import { RENTAL_INFORMATION_FIELDS } from '../fields/rentalInformationFields/config.js';
 
 export function extractValueColumns(spans) {
 	const out = {};
@@ -12,6 +13,8 @@ export function extractValueColumns(spans) {
 	function buildCfg(f) {
 		const cfg = { label: f.key, targetLeft: f.targetLeft };
 		const passthrough = [
+			'labelIncludes',
+			'labelAltIncludes',
 			'topThreshold',
 			'leftThreshold',
 			'combineAdjacentDigits',
@@ -58,6 +61,12 @@ export function extractValueColumns(spans) {
 	}
 	// Include CONSTRUCTION value columns
 	for (const f of CONSTRUCTION_FIELDS) {
+		if (f.source === 'valueCols' && typeof f.targetLeft === 'number') {
+			out[f.key] = extractValueAtLeft(spans, buildCfg(f));
+		}
+	}
+	// Include RENTAL INFORMATION value columns
+	for (const f of RENTAL_INFORMATION_FIELDS) {
 		if (f.source === 'valueCols' && typeof f.targetLeft === 'number') {
 			out[f.key] = extractValueAtLeft(spans, buildCfg(f));
 		}

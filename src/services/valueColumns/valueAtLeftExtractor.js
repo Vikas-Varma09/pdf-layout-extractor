@@ -10,6 +10,9 @@ import { isNumericText } from '../../../fieldMapper.js';
 export function extractValueAtLeft(spans, config) {
 	const {
 		label,
+		labelIncludes,
+		labelAltIncludes,
+		debug = false,
 		targetLeft,
 		topThreshold = 0.6,
 		leftThreshold = 2.0,
@@ -22,7 +25,27 @@ export function extractValueAtLeft(spans, config) {
 	if (!Array.isArray(spans) || spans.length === 0) return null;
 	if (!label || typeof targetLeft !== 'number') return null;
 
-	const labelSpan = spans.find(s => s.text === label);
+	const findByIncludes = (needle) => {
+		if (!needle) return null;
+		const n = String(needle).toLowerCase();
+		return (
+			spans.find(s => typeof s.text === 'string' && String(s.text).toLowerCase().includes(n)) ||
+			null
+		);
+	};
+
+	const labelSpan =
+		spans.find(s => s.text === label) ||
+		findByIncludes(labelIncludes) ||
+		findByIncludes(labelAltIncludes);
+
+	if (debug) {
+		console.log('[valueCols] label:', label);
+		console.log('[valueCols] labelIncludes:', labelIncludes ?? null);
+		console.log('[valueCols] labelAltIncludes:', labelAltIncludes ?? null);
+		console.log('[valueCols] matched labelSpan:', labelSpan ? { text: labelSpan.text, page: labelSpan.page, top: labelSpan.top, left: labelSpan.left } : null);
+		console.log('[valueCols] targetLeft:', targetLeft, 'topThreshold:', topThreshold, 'leftThreshold:', leftThreshold);
+	}
 	if (!labelSpan) return null;
 
 	// Helper to find best numeric near a given left on label row
@@ -83,6 +106,10 @@ export function extractValueAtLeft(spans, config) {
 
 	if (rowCandidates.length > 0) {
 		const chosen = rowCandidates[0].s;
+		if (debug) {
+			console.log('[valueCols] picked (same row):', { text: chosen.text, left: chosen.left, top: chosen.top, page: chosen.page });
+			console.log('[valueCols] candidates (same row sample):', rowCandidates.slice(0, 5).map(c => ({ text: c.s.text, left: c.s.left, top: c.s.top, dLeft: c.leftDelta })));
+		}
 		return String(chosen.text).trim();
 	}
 
@@ -108,6 +135,10 @@ export function extractValueAtLeft(spans, config) {
 
 	if (belowCandidates.length > 0) {
 		const chosen = belowCandidates[0].s;
+		if (debug) {
+			console.log('[valueCols] picked (below):', { text: chosen.text, left: chosen.left, top: chosen.top, page: chosen.page });
+			console.log('[valueCols] candidates (below sample):', belowCandidates.slice(0, 5).map(c => ({ text: c.s.text, left: c.s.left, top: c.s.top, dTop: c.topDelta, dLeft: c.leftDelta })));
+		}
 		return String(chosen.text).trim();
 	}
 
@@ -132,7 +163,15 @@ export function extractValueAtLeft(spans, config) {
 
 	if (vicinityCandidates.length > 0) {
 		const chosen = vicinityCandidates[0].s;
+		if (debug) {
+			console.log('[valueCols] picked (vicinity):', { text: chosen.text, left: chosen.left, top: chosen.top, page: chosen.page });
+			console.log('[valueCols] candidates (vicinity sample):', vicinityCandidates.slice(0, 5).map(c => ({ text: c.s.text, left: c.s.left, top: c.s.top, dTopAbs: c.topAbs, dLeft: c.leftDelta })));
+		}
 		return String(chosen.text).trim();
+	}
+
+	if (debug) {
+		console.log('[valueCols] no candidates found');
 	}
 
 	return null;
