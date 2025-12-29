@@ -9,6 +9,7 @@ import { LOCALITY_AND_DEMAND_FIELDS } from '../fields/localityAndDemandFields/co
 import { REPORTS_FIELDS as SERVICES_REPORTS_FIELDS } from '../fields/servicesFields/config.js';
 import { CONSTRUCTION_FIELDS } from '../fields/constructionFields/config.js';
 import { CONDITION_OF_PROPERTY_FIELDS } from '../fields/conditionOfPropertyFields/config.js';
+import { ACCOMMODATION_FIELDS } from '../fields/accommodationFields/config.js';
 import { RENTAL_INFORMATION_FIELDS } from '../fields/rentalInformationFields/config.js';
 import { VALUATION_FOR_FINANCE_PURPOSES_BTL_FIELDS } from '../fields/valuationForFinancePurposesBTLFields/config.js';
 import { VALUATION_FOR_FINANCE_PURPOSES_HPP_FIELDS } from '../fields/valuationForFinancePurposesHPPFields/config.js';
@@ -134,6 +135,37 @@ export function extractCheckboxFields(spans, { applicationType } = {}) {
 	const propertyType = extractPropertyType(spans);
 	const statuses = extractPropertyTypeStatuses(spans);
 
+	// Normalize checkbox outputs to boolean/null (per requirements):
+	// 1) X-style fields: true if X exists, otherwise null
+	// 2) Yes/No fields: Yes->true, No->false, N/A/null->null
+	// 3) servicesSeparateForFlats: keep as string "Yes"/"No"/"N/A"/null
+	const SERVICES_SEPARATE_LABEL = 'If house split in to flats, are services separate for each unit?';
+	const normToken = (v) => String(v ?? '').trim();
+	const toYesNoBool = (v) => {
+		const s = normToken(v);
+		if (!s) return null;
+		const up = s.toUpperCase();
+		if (up === 'YES' || up === 'Y' || up === 'TRUE') return true;
+		if (up === 'NO' || up === 'N' || up === 'FALSE') return false;
+		if (up === 'N/A' || up === 'NA') return null;
+		return null;
+	};
+	const toXBool = (v) => {
+		const up = normToken(v).toUpperCase();
+		return up === 'X' ? true : null;
+	};
+	const toSingleBool = (v) => {
+		// Some single-checkbox boxes contain words (Yes/No) instead of an X
+		const s = normToken(v);
+		if (!s) return null;
+		const up = s.toUpperCase();
+		if (up === 'X') return true;
+		if (up === 'YES' || up === 'Y' || up === 'TRUE') return true;
+		if (up === 'NO' || up === 'N' || up === 'FALSE') return false;
+		if (up === 'N/A' || up === 'NA') return null;
+		return null;
+	};
+
 	const yesNoResults = {};
 	// NOTE: BTL vs HPP share label text but have different yes/no left coords.
 	// We must include only the relevant set based on applicationType.
@@ -221,18 +253,45 @@ export function extractCheckboxFields(spans, { applicationType } = {}) {
 			debug: false,
 		}));
 
-	const allSingles = [...singleCheckboxConfigs, ...servicesSingleConfigs];
+	// Accommodation: some labels like "Private" / "Communal" also occur in SERVICES, so anchor them under "Gardens"
+	const accommodationSingleConfigs = ACCOMMODATION_FIELDS
+		.filter(f => f.source === 'checkbox' && typeof f.left === 'number')
+		.map(f => ({
+			label: f.key,
+			// Use outputKey so the field maps directly (e.g. privateGarden/sharedGarden)
+			mapKey: f.outputKey || f.key,
+			left: f.left,
+			topThreshold: f.topThreshold ?? 0.8,
+			leftThreshold: f.leftThreshold ?? 3.0,
+			belowAnchorLabel: (f.key === 'Private' || f.key === 'Communal') ? 'Gardens' : f.belowAnchorLabel,
+			allowRowFallback: f.allowRowFallback,
+			fallbackMaxLeft: f.fallbackMaxLeft,
+			debug: false,
+		}));
+
+	const allSingles = [...singleCheckboxConfigs, ...servicesSingleConfigs, ...accommodationSingleConfigs];
 	for (const cfg of allSingles) {
 		const val = extractSingleCheckbox(spans, cfg);
 		const key = cfg.mapKey || cfg.label;
 		singleCheckboxResults[key] = val;
 	}
-	return {
-		'Property Type': propertyType,
-		...statuses,
-		...yesNoResults,
-		...singleCheckboxResults,
-	};
+
+	// Apply boolean normalization to checkbox values (but keep "Property Type" as a string label)
+	const normalized = {};
+	// X-style: property type option statuses are X/null -> boolean
+	for (const [k, v] of Object.entries(statuses)) {
+		normalized[k] = toXBool(v);
+	}
+	// Yes/No(/N/A): boolean/null, except servicesSeparateForFlats remains string
+	for (const [k, v] of Object.entries(yesNoResults)) {
+		normalized[k] = (k === SERVICES_SEPARATE_LABEL) ? (v ?? null) : toYesNoBool(v);
+	}
+	// Single checkboxes: default false when empty; map words when present
+	for (const [k, v] of Object.entries(singleCheckboxResults)) {
+		normalized[k] = toSingleBool(v);
+	}
+
+	return { 'Property Type': propertyType, ...normalized };
 }
 
 

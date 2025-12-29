@@ -174,9 +174,10 @@ function extractQualifications(text) {
 	// Search near the qualifications line
 	const seg = windowAfter(text, /(Professional\s+)?Qualifications\s+of\s+the\s+Valuer/i, 220);
 	if (!seg) return { mrics: null, frics: null, assocRics: null };
-	const mrics = /\bMRICS\b\s+X\b/i.test(seg) ? true : false;
-	const frics = /\bFRICS\b\s+X\b/i.test(seg) ? true : false;
-	const assoc = /\bAssocRICS\b\s+X\b/i.test(seg) ? true : false;
+	// Return true only when explicitly marked with X; otherwise null (empty/not selected)
+	const mrics = /\bMRICS\b\s+X\b/i.test(seg) ? true : null;
+	const frics = /\bFRICS\b\s+X\b/i.test(seg) ? true : null;
+	const assoc = /\bAssocRICS\b\s+X\b/i.test(seg) ? true : null;
 	return { mrics, frics, assocRics: assoc };
 }
 

@@ -38,8 +38,8 @@ export function buildAccommodationGroup({ spans, checkbox, valueCols }) {
 		let value = null;
 		if (item.source === 'checkbox') {
 			// Prefer checkbox aggregation if present; otherwise compute from spans at the configured position
-			value = (checkbox && checkbox[sourceKey] !== undefined)
-				? checkbox[sourceKey]
+			value = (checkbox && checkbox[outputKey] !== undefined)
+				? checkbox[outputKey]
 				: computeSingleChoiceFromSpans(spans, sourceKey, item.left);
 		} else if (item.source === 'valueCols') {
 			value = valueCols?.[sourceKey] ?? null;

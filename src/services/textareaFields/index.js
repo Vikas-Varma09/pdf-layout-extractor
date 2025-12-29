@@ -430,19 +430,18 @@ const TEXTAREA_FIELDS = [
 		// Use exact text to disambiguate from the HMO question above
 		nextLabel: 'Does the property appear to be tenanted at present?',
 		nextLabelIncludes: 'Does the property appear to',
-		// Keep to the right column where CURRENT OCCUPANCY sits
-		leftBand: 12.0,
-		// In some layouts, the answer sits on the same row to the right
-		includeSameRowRight: true,
-		// Ensure we only take tokens to the right of the label (exclude left column values like 171)
-		onlyRightOfA: true,
-		rightSlack: 0.5,
-		// Slightly widen same-row tolerance
-		rowEps: 2.0,
-		// Enable debug logs for this field
+		mapKey: 'currentOccupancy_isCurrentlyTenanted',
+		// Answer is in the right column textbox (example left ~52.58%)
+		answerLeftMin: 35.0,
+		answerLeftMax: 95.0,
+		includeSameRowRight: false,
+		onlyRightOfA: false,
+		// Slightly wider tolerances for this template row
+		rowEps: 2.5,
+		maxBelowA: 8.0,
+		clusterThreshold: 8.0,
+		expandRightWithin: 35.0,
 		debug: false,
-		clusterThreshold: 6.0,
-		expandRightWithin: 20.0,
 	},
 	{
 		label: 'Any other information which in your opinion Gatehouse Bank plc should note:',
