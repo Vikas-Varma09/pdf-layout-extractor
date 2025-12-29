@@ -87,24 +87,24 @@ export async function extractFieldsController(req, res) {
 		const valuationReportDetails = rawText ? parseHeader(rawText, null) : null;
 
 		return res.json({ 
-			propertyType, 
-			accommodation, 
-			currentOccupancy, 
+			applicationType,
+			valuationReportDetails,
+			propertyType,
 			newBuild, 
-			reports, 
-			energyEfficiency, 
-			essentialRepairs, 
+			accommodation, 
+			currentOccupancy,  
+			construction, 
 			localityAndDemand, 
 			services, 
-			construction, 
+			energyEfficiency, 
 			conditionOfProperty,
+			reports, 
+			essentialRepairs, 
 			rentalInformation,
 			valuationForFinancePurposesBTL,
 			valuationForFinancePurposesHPP,
-			applicationType,
 			generalRemark,
 			valuersDeclaration,
-			valuationReportDetails,
 			rawText: rawText || null
 		});
 	} catch (err) {
