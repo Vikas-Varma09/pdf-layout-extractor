@@ -2,7 +2,7 @@ import { extractValueAtLeft } from './valueAtLeftExtractor.js';
 import { PROPERTY_TYPE_FIELDS } from '../fields/propertyTypeFields/config.js';
 import { ACCOMMODATION_FIELDS } from '../fields/accommodationFields/config.js';
 import { CURRENT_OCCUPANCY_FIELDS } from '../fields/currentOccupancyFields/config.js';
-import { NEW_BUILD_FIELDS } from '../fields/newBuild/config.js';
+import { NEW_BUILD_FIELDS } from '../fields/newBuildFields/config.js';
 import { ENERGY_EFFICIENCY_FIELDS } from '../fields/energyEfficiencyFields/config.js';
 import { CONSTRUCTION_FIELDS } from '../fields/constructionFields/config.js';
 import { RENTAL_INFORMATION_FIELDS } from '../fields/rentalInformationFields/config.js';

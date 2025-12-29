@@ -4,7 +4,7 @@ import { extractValueColumns } from './src/services/valueColumns/index.js';
 import { buildPropertyTypeGroup } from './src/services/fields/propertyTypeFields/index.js';
 import { buildAccommodationGroup } from './src/services/fields/accommodationFields/index.js';
 import { buildCurrentOccupancyGroup } from './src/services/fields/currentOccupancyFields/index.js';
-import { buildNewBuildGroup } from './src/services/fields/newBuild/index.js';
+import { buildNewBuildGroup } from './src/services/fields/newBuildFields/index.js';
 import { buildReportsGroup } from './src/services/fields/reportsFields/index.js';
 import { buildEnergyEfficiencyGroup } from './src/services/fields/energyEfficiencyFields/index.js';
 import { buildEssentialRepairsGroup } from './src/services/fields/essentialRepairsFields/index.js';
@@ -18,7 +18,7 @@ import { buildValuationForFinancePurposesHPPGroup } from './src/services/fields/
 import { extractRawTextFromOCR } from './src/services/ocrService.js';
 import { mapValuersDeclaration } from './src/services/fields/valuersDeclarationFields/mapper.js';
 import { parseHeader } from './src/services/fields/valuationReportDetailsFields/mapper.js';
-import { mapGeneralRemarks } from './src/services/fields/generalRemark/mapper.js';
+import { mapGeneralRemarks } from './src/services/fields/generalRemarkFields/mapper.js';
 
 /**
  * POST /api/extract-fields

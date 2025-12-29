@@ -2,7 +2,7 @@ import { extractPropertyType, extractPropertyTypeStatuses } from './propertyType
 import { extractYesNo } from './yesNoExtractor.js';
 import { PROPERTY_TYPE_FIELDS } from '../fields/propertyTypeFields/config.js';
 import { CURRENT_OCCUPANCY_FIELDS } from '../fields/currentOccupancyFields/config.js';
-import { NEW_BUILD_FIELDS } from '../fields/newBuild/config.js';
+import { NEW_BUILD_FIELDS } from '../fields/newBuildFields/config.js';
 import { REPORTS_FIELDS } from '../fields/reportsFields/config.js';
 import { ESSENTIAL_REPAIRS_FIELDS } from '../fields/essentialRepairsFields/config.js';
 import { LOCALITY_AND_DEMAND_FIELDS } from '../fields/localityAndDemandFields/config.js';
