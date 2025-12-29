@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Field Extractor</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <div>
+          <h1>PDF Field Extractor</h1>
+          <p class="subtle">Upload a PDF, choose application type, and copy the extracted JSON.</p>
+        </div>
+
+        <label class="switchRow" title="Toggle documentation panel">
+          <span class="switchLabel">Documentation</span>
+          <span class="switch">
+            <input id="docsToggle" type="checkbox" />
+            <span class="slider" aria-hidden="true"></span>
+          </span>
+        </label>
+      </header>
+
+      <section class="card">
+        <form id="extractForm" class="form">
+          <label class="field">
+            <span class="label">PDF file</span>
+            <input id="fileInput" name="file" type="file" accept="application/pdf" required />
+          </label>
+
+          <div class="row">
+            <label class="field">
+              <span class="label">applicationType</span>
+              <select id="appType" name="applicationType">
+                <option value="">(auto / none)</option>
+                <option value="BTL">BTL</option>
+                <option value="HPP">HPP</option>
+              </select>
+            </label>
+
+            <label class="field checkbox">
+              <input id="prettyPrint" type="checkbox" checked />
+              <span>Pretty print</span>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button id="submitBtn" type="submit">Extract</button>
+            <button id="copyBtn" type="button" class="secondary" disabled>Copy JSON</button>
+            <button id="downloadBtn" type="button" class="secondary" disabled>Download JSON</button>
+          </div>
+
+          <div id="status" class="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="resultHeader">
+          <h2>Result</h2>
+          <div class="meta" id="meta"></div>
+        </div>
+        <pre id="output" class="output">{}</pre>
+      </section>
+
+      <section id="docsPanel" class="card docs" hidden>
+        <h2>Documentation</h2>
+        <p class="subtle">
+          This app extracts structured data from fixed-template PDFs using layout/coordinates and targeted fallbacks.
+        </p>
+
+        <div class="docsGrid">
+          <div>
+            <h3>How to use</h3>
+            <ul>
+              <li>Select a PDF</li>
+              <li>Set <code>applicationType</code>: <code>BTL</code> or <code>HPP</code> (optional)</li>
+              <li>Click <b>Extract</b></li>
+              <li>Use <b>Copy JSON</b> to copy the full response</li>
+            </ul>
+          </div>
+          <div>
+            <h3>What is extracted</h3>
+            <ul>
+              <li>Checkbox fields (Yes/No/N/A and single-column checks)</li>
+              <li>Value columns (numbers on the same row/right side)</li>
+              <li>Textarea fields (bounded between labels, left/right column aware)</li>
+              <li>Raw text via OCR (fallback), used for General Remarks and mappers</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>API</h3>
+        <ul>
+          <li><code>POST /api/extract-fields</code> (multipart/form-data)</li>
+          <li><b>file</b>: PDF (required)</li>
+          <li><b>applicationType</b>: <code>BTL</code> or <code>HPP</code> (optional)</li>
+        </ul>
+
+        <h3>Notes</h3>
+        <ul>
+          <li><b>BTL</b>: includes Rental Information + Valuation (BTL)</li>
+          <li><b>HPP</b>: includes Valuation (HPP), Rental Information is not expected</li>
+          <li><b>PDF text layer</b>: primary extraction uses <code>pdfjs-dist</code> spans from the selectable text layer</li>
+          <li><b>OCR fallback</b>: when the PDF text layer is missing/poor (scanned PDFs), we generate <code>rawText</code> using Poppler (<code>pdftocairo</code>) + Python <b>PaddleOCR</b></li>
+          <li><code>rawText</code> is also used for mappers like General Remarks / Valuers Declaration / Valuation Report Details</li>
+        </ul>
+
+        <p class="subtle">
+          GitHub: <a href="https://github.com/Vikas-Varma09/pdf-layout-extractor" target="_blank" rel="noreferrer">Vikas-Varma09/pdf-layout-extractor</a>
+        </p>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
+

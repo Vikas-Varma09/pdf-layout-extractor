@@ -5,6 +5,10 @@ import { extractFieldsController } from './controller.js';
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Serve simple UI (no build step)
+app.use('/ui', express.static('ui'));
+app.get('/', (_req, res) => res.redirect('/ui/'));
+
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
